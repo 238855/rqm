@@ -220,387 +220,383 @@ requirements:
               - cli
               - testing
 
-further_information:
-  - https://github.com/238855/rqm
-  - "This file demonstrates self-hosting: RQM managing its own requirements"
-
-  - summary: Automatic ID generation with metadata management
-    id: RQM-005
-    status: proposed
-    owner: "@238855"
-    acceptance_criteria:
-      given: User writes requirements YAML without specifying id field
-      when: RQM processes the requirements file
-      then: |
-        - Auto-generates sequential ID from configured project prefix (e.g., RQM-001)
-        - Generates UUID for stable tracking across refactors
-        - Uses kebab-case summary as human-readable identifier
-        - Stores metadata in .rqm/.metadata/<kebab-summary>.json
-        - User never sees or manages IDs/UUIDs manually
-        - Changes to summary update metadata, preserve UUID
-    dependencies: []
-    requirements:
-      - summary: Add project configuration for ID prefix
-        id: RQM-005.1
+      - summary: Automatic ID generation with metadata management
+        id: RQM-005
         status: proposed
         owner: "@238855"
         acceptance_criteria:
-          given: New project initializes RQM
-          when: User runs 'rqm init'
+          given: User writes requirements YAML without specifying id field
+          when: RQM processes the requirements file
           then: |
-            - Creates .rqm/config.yml with project_prefix field
-            - Prompts user for prefix (default: project name uppercase)
-            - Stores next_id counter in metadata
+            - Auto-generates sequential ID from configured project prefix (e.g., RQM-001)
+            - Generates UUID for stable tracking across refactors
+            - Uses kebab-case summary as human-readable identifier
+            - Stores metadata in .rqm/.metadata/<kebab-summary>.json
+            - User never sees or manages IDs/UUIDs manually
+            - Changes to summary update metadata, preserve UUID
+        dependencies: []
+        requirements:
+          - summary: Add project configuration for ID prefix
+            id: RQM-005.1
+            status: proposed
+            owner: "@238855"
+            acceptance_criteria:
+              given: New project initializes RQM
+              when: User runs 'rqm init'
+              then: |
+                - Creates .rqm/config.yml with project_prefix field
+                - Prompts user for prefix (default: project name uppercase)
+                - Stores next_id counter in metadata
+            dependencies: []
+
+          - summary: Implement metadata store for requirement tracking
+            id: RQM-005.2
+            status: proposed
+            owner: "@238855"
+            acceptance_criteria:
+              given: Requirements file with summaries
+              when: RQM processes requirements
+              then: |
+                - Creates .rqm/.metadata/ directory (gitignored by default)
+                - Each requirement gets <kebab-summary>.json metadata file
+                - Metadata contains: uuid, generated_id, summary_hash, created_at, updated_at
+                - Metadata persists across summary changes via UUID tracking
+            dependencies: ["RQM-005.1"]
+
+          - summary: Remove id field from user-facing YAML schema
+            id: RQM-005.3
+            status: proposed
+            owner: "@238855"
+            acceptance_criteria:
+              given: User writes requirements YAML
+              when: Defining a requirement
+              then: |
+                - Only summary, status, owner, acceptance_criteria required
+                - id field optional (ignored if present, generated otherwise)
+                - dependencies reference kebab-case summaries, not IDs
+                - Backward compatible with existing ID-based files
+            dependencies: ["RQM-005.2"]
+
+          - summary: Implement kebab-case summary as primary identifier
+            id: RQM-005.4
+            status: proposed
+            owner: "@238855"
+            acceptance_criteria:
+              given: Requirement with summary "Automatic ID generation with metadata"
+              when: Processing dependencies and references
+              then: |
+                - Generates kebab-case: "automatic-id-generation-with-metadata"
+                - Dependencies can reference via kebab-case or generated ID
+                - Detects summary hash changes, prompts for merge/new requirement
+                - Enforces uniqueness of kebab-case summaries
+            dependencies: ["RQM-005.3"]
+
+          - summary: Update Rust types for metadata system
+            id: RQM-005.5
+            status: proposed
+            owner: "@238855"
+            acceptance_criteria:
+              given: Current Requirement struct with mandatory id field
+              when: Refactoring for metadata system
+              then: |
+                - Add RequirementMetadata struct (uuid, generated_id, created_at, updated_at, summary_hash)
+                - Make Requirement.id Option<String> (legacy support)
+                - Add kebab_case_id() method
+                - Add metadata module for metadata I/O
+            dependencies: ["RQM-005.4"]
+
+      - summary: Core YAML parsing and type system
+        id: RQM-006
+        status: implemented
+        owner: "@238855"
+        acceptance_criteria:
+          given: Requirements YAML file with nested structure
+          when: Parser processes the file
+          then: |
+            - Deserializes YAML to Rust types with serde
+            - Handles nested requirements recursively
+            - Preserves all metadata fields
+            - Roundtrip serialization maintains data integrity
+        dependencies: []
+        requirements:
+          - summary: Define core Requirement type with all fields
+            id: RQM-006.1
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Requirement struct definition
+              when: Creating new requirement instances
+              then: |
+                - Supports summary, name, description, justification
+                - Supports acceptance_test, acceptance_test_link
+                - Supports owner reference (GitHub @user or email)
+                - Supports nested sub-requirements
+                - Supports further_information links
+            dependencies: []
+
+          - summary: Implement RequirementConfig for top-level structure
+            id: RQM-006.2
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: YAML file with aliases and requirements sections
+              when: Parsing configuration
+              then: |
+                - Parses aliases as PersonAlias map
+                - Parses requirements as flat or nested list
+                - Validates structure against JSON schema
+            dependencies: ["RQM-006.1"]
+
+          - summary: Support both GitHub and email owner references
+            id: RQM-006.3
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Owner field in requirement
+              when: Validating owner reference
+              then: |
+                - Accepts @username format for GitHub users
+                - Accepts email@domain format for email
+                - Accepts alias references from aliases section
+                - Validates format is one of the three types
+            dependencies: ["RQM-006.2"]
+
+      - summary: Graph-based dependency analysis with cycle detection
+        id: RQM-007
+        status: implemented
+        owner: "@238855"
+        acceptance_criteria:
+          given: Requirements with dependencies and sub-requirements
+          when: Building requirement graph
+          then: |
+            - Constructs directed graph using petgraph
+            - Detects circular dependencies
+            - Prevents infinite loops in traversal
+            - Returns error on circular reference
+        dependencies: ["RQM-006"]
+        requirements:
+          - summary: Build directed graph from requirements
+            id: RQM-007.1
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: RequirementConfig with requirements
+              when: Creating RequirementGraph
+              then: |
+                - Creates node for each requirement by summary
+                - Adds edges for explicit dependencies
+                - Adds edges for parent-child relationships
+                - Flattens nested structure
+            dependencies: []
+
+          - summary: Implement cycle detection algorithm
+            id: RQM-007.2
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Requirement graph with potential cycles
+              when: Checking for circular references
+              then: |
+                - Uses petgraph is_cyclic_directed()
+                - Returns true if cycles exist
+                - Returns false for valid DAG
+            dependencies: ["RQM-007.1"]
+
+          - summary: Safe graph traversal with visited tracking
+            id: RQM-007.3
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Requirement graph to traverse
+              when: Walking dependencies
+              then: |
+                - Maintains HashSet of visited nodes
+                - Respects MAX_TRAVERSAL_DEPTH = 100
+                - Prevents infinite loops
+                - Returns full traversal path
+            dependencies: ["RQM-007.2"]
+
+      - summary: JSON Schema validation for YAML structure
+        id: RQM-008
+        status: implemented
+        owner: "@238855"
+        acceptance_criteria:
+          given: Requirements YAML file
+          when: Validating against JSON schema
+          then: |
+            - Compiles JSON Schema from docs/schema.json
+            - Validates YAML structure matches schema
+            - Reports detailed validation errors
+            - Supports oneOf for owner reference types
+        dependencies: ["RQM-006"]
+        requirements:
+          - summary: Create comprehensive JSON Schema definition
+            id: RQM-008.1
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Requirements structure specification
+              when: Defining JSON Schema
+              then: |
+                - Uses JSON Schema Draft 2020-12
+                - Defines Requirement object schema
+                - Defines RequirementConfig schema
+                - Uses oneOf for polymorphic owner field
+                - Includes pattern validation for emails/GitHub handles
+            dependencies: []
+
+          - summary: Implement schema compilation and validation
+            id: RQM-008.2
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: JSON Schema and YAML document
+              when: Running validation
+              then: |
+                - Compiles schema using jsonschema crate
+                - Validates parsed YAML against schema
+                - Returns detailed error messages
+                - Supports custom error types
+            dependencies: ["RQM-008.1"]
+
+      - summary: Semantic validation beyond schema
+        id: RQM-009
+        status: implemented
+        owner: "@238855"
+        acceptance_criteria:
+          given: Syntactically valid YAML that passes schema
+          when: Running semantic validation
+          then: |
+            - Detects duplicate summaries
+            - Validates owner alias references exist
+            - Validates dependency references exist
+            - Checks for circular dependencies
+        dependencies: ["RQM-008"]
+        requirements:
+          - summary: Duplicate summary detection
+            id: RQM-009.1
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Multiple requirements with same summary
+              when: Validating configuration
+              then: |
+                - Collects all summaries in HashSet
+                - Detects duplicates
+                - Returns DuplicateSummary error with summary text
+            dependencies: []
+
+          - summary: Owner reference validation
+            id: RQM-009.2
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Owner field referencing an alias
+              when: Validating owner
+              then: |
+                - Checks if alias exists in aliases map
+                - Returns InvalidOwner error if not found
+                - Accepts direct email/GitHub handles
+            dependencies: []
+
+          - summary: Dependency reference validation
+            id: RQM-009.3
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Dependency list in requirement
+              when: Validating dependencies
+              then: |
+                - Verifies each dependency summary exists
+                - Returns InvalidReference error if not found
+                - Builds valid dependency graph
+            dependencies: ["RQM-009.1"]
+
+      - summary: Comprehensive test coverage
+        id: RQM-010
+        status: implemented
+        owner: "@238855"
+        acceptance_criteria:
+          given: Rust core implementation
+          when: Running cargo test
+          then: |
+            - All 24 unit tests pass
+            - Zero clippy warnings
+            - Tests cover happy path and error cases
+            - Uses tempfile for filesystem tests
+        dependencies: []
+        requirements:
+          - summary: Graph module tests
+            id: RQM-010.1
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: RequirementGraph implementation
+              when: Running tests
+              then: |
+                - test_graph_creation passes
+                - test_circular_reference passes
+                - test_no_cycles passes
+                - test_traverse passes
+                - test_dependencies passes
+            dependencies: []
+
+          - summary: Metadata module tests
+            id: RQM-010.2
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: MetadataStore implementation
+              when: Running tests
+              then: |
+                - test_kebab_case passes
+                - test_project_config_next_id passes
+                - test_metadata_store_init passes
+                - test_metadata_creation passes
+                - test_metadata_persistence passes
+            dependencies: []
+
+          - summary: Validator module tests
+            id: RQM-010.3
+            status: implemented
+            owner: "@238855"
+            acceptance_criteria:
+              given: Validator implementation
+              when: Running tests
+              then: |
+                - test_validate_simple_config passes
+                - test_duplicate_summary passes
+                - test_email_owner passes
+                - test_valid_alias_owner passes
+                - test_invalid_alias_owner passes
+            dependencies: []
+
+      - summary: Monorepo structure with multiple languages
+        id: RQM-011
+        status: implemented
+        owner: "@238855"
+        acceptance_criteria:
+          given: Project requirements for polyglot system
+          when: Setting up repository
+          then: |
+            - rust-core/ directory for Rust library
+            - go-cli/ directory for Go CLI
+            - web-ui/ directory for React frontend
+            - .rqm/ directory for project requirements
+            - tests/ directory for acceptance tests
         dependencies: []
 
-      - summary: Implement metadata store for requirement tracking
-        id: RQM-005.2
-        status: proposed
-        owner: "@238855"
-        acceptance_criteria:
-          given: Requirements file with summaries
-          when: RQM processes requirements
-          then: |
-            - Creates .rqm/.metadata/ directory (gitignored by default)
-            - Each requirement gets <kebab-summary>.json metadata file
-            - Metadata contains: uuid, generated_id, summary_hash, created_at, updated_at
-            - Metadata persists across summary changes via UUID tracking
-        dependencies: ["RQM-005.1"]
-
-      - summary: Remove id field from user-facing YAML schema
-        id: RQM-005.3
-        status: proposed
-        owner: "@238855"
-        acceptance_criteria:
-          given: User writes requirements YAML
-          when: Defining a requirement
-          then: |
-            - Only summary, status, owner, acceptance_criteria required
-            - id field optional (ignored if present, generated otherwise)
-            - dependencies reference kebab-case summaries, not IDs
-            - Backward compatible with existing ID-based files
-        dependencies: ["RQM-005.2"]
-
-      - summary: Implement kebab-case summary as primary identifier
-        id: RQM-005.4
-        status: proposed
-        owner: "@238855"
-        acceptance_criteria:
-          given: Requirement with summary "Automatic ID generation with metadata"
-          when: Processing dependencies and references
-          then: |
-            - Generates kebab-case: "automatic-id-generation-with-metadata"
-            - Dependencies can reference via kebab-case or generated ID
-            - Detects summary hash changes, prompts for merge/new requirement
-            - Enforces uniqueness of kebab-case summaries
-        dependencies: ["RQM-005.3"]
-
-      - summary: Update Rust types for metadata system
-        id: RQM-005.5
-        status: proposed
-        owner: "@238855"
-        acceptance_criteria:
-          given: Current Requirement struct with mandatory id field
-          when: Refactoring for metadata system
-          then: |
-            - Add RequirementMetadata struct (uuid, generated_id, created_at, updated_at, summary_hash)
-            - Make Requirement.id Option<String> (legacy support)
-            - Add kebab_case_id() method
-            - Add metadata module for metadata I/O
-        dependencies: ["RQM-005.4"]
-
-  - summary: Core YAML parsing and type system
-    id: RQM-006
-    status: implemented
-    owner: "@238855"
-    acceptance_criteria:
-      given: Requirements YAML file with nested structure
-      when: Parser processes the file
-      then: |
-        - Deserializes YAML to Rust types with serde
-        - Handles nested requirements recursively
-        - Preserves all metadata fields
-        - Roundtrip serialization maintains data integrity
-    dependencies: []
-    requirements:
-      - summary: Define core Requirement type with all fields
-        id: RQM-006.1
+      - summary: Git conventional commits with enforcement
+        id: RQM-012
         status: implemented
         owner: "@238855"
         acceptance_criteria:
-          given: Requirement struct definition
-          when: Creating new requirement instances
+          given: Git repository with commits
+          when: Developer attempts to commit
           then: |
-            - Supports summary, name, description, justification
-            - Supports acceptance_test, acceptance_test_link
-            - Supports owner reference (GitHub @user or email)
-            - Supports nested sub-requirements
-            - Supports further_information links
+            - Commitlint validates commit message format
+            - Husky runs pre-commit hooks
+            - Enforces type(scope): subject format
+            - Blocks invalid commits
+            - Runs Rust tests before commit
         dependencies: []
-
-      - summary: Implement RequirementConfig for top-level structure
-        id: RQM-006.2
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: YAML file with aliases and requirements sections
-          when: Parsing configuration
-          then: |
-            - Parses aliases as PersonAlias map
-            - Parses requirements as flat or nested list
-            - Validates structure against JSON schema
-        dependencies: ["RQM-006.1"]
-
-      - summary: Support both GitHub and email owner references
-        id: RQM-006.3
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Owner field in requirement
-          when: Validating owner reference
-          then: |
-            - Accepts @username format for GitHub users
-            - Accepts email@domain format for email
-            - Accepts alias references from aliases section
-            - Validates format is one of the three types
-        dependencies: ["RQM-006.2"]
-
-  - summary: Graph-based dependency analysis with cycle detection
-    id: RQM-007
-    status: implemented
-    owner: "@238855"
-    acceptance_criteria:
-      given: Requirements with dependencies and sub-requirements
-      when: Building requirement graph
-      then: |
-        - Constructs directed graph using petgraph
-        - Detects circular dependencies
-        - Prevents infinite loops in traversal
-        - Returns error on circular reference
-    dependencies: ["RQM-006"]
-    requirements:
-      - summary: Build directed graph from requirements
-        id: RQM-007.1
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: RequirementConfig with requirements
-          when: Creating RequirementGraph
-          then: |
-            - Creates node for each requirement by summary
-            - Adds edges for explicit dependencies
-            - Adds edges for parent-child relationships
-            - Flattens nested structure
-        dependencies: []
-
-      - summary: Implement cycle detection algorithm
-        id: RQM-007.2
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Requirement graph with potential cycles
-          when: Checking for circular references
-          then: |
-            - Uses petgraph is_cyclic_directed()
-            - Returns true if cycles exist
-            - Returns false for valid DAG
-        dependencies: ["RQM-007.1"]
-
-      - summary: Safe graph traversal with visited tracking
-        id: RQM-007.3
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Requirement graph to traverse
-          when: Walking dependencies
-          then: |
-            - Maintains HashSet of visited nodes
-            - Respects MAX_TRAVERSAL_DEPTH = 100
-            - Prevents infinite loops
-            - Returns full traversal path
-        dependencies: ["RQM-007.2"]
-
-  - summary: JSON Schema validation for YAML structure
-    id: RQM-008
-    status: implemented
-    owner: "@238855"
-    acceptance_criteria:
-      given: Requirements YAML file
-      when: Validating against JSON schema
-      then: |
-        - Compiles JSON Schema from docs/schema.json
-        - Validates YAML structure matches schema
-        - Reports detailed validation errors
-        - Supports oneOf for owner reference types
-    dependencies: ["RQM-006"]
-    requirements:
-      - summary: Create comprehensive JSON Schema definition
-        id: RQM-008.1
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Requirements structure specification
-          when: Defining JSON Schema
-          then: |
-            - Uses JSON Schema Draft 2020-12
-            - Defines Requirement object schema
-            - Defines RequirementConfig schema
-            - Uses oneOf for polymorphic owner field
-            - Includes pattern validation for emails/GitHub handles
-        dependencies: []
-
-      - summary: Implement schema compilation and validation
-        id: RQM-008.2
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: JSON Schema and YAML document
-          when: Running validation
-          then: |
-            - Compiles schema using jsonschema crate
-            - Validates parsed YAML against schema
-            - Returns detailed error messages
-            - Supports custom error types
-        dependencies: ["RQM-008.1"]
-
-  - summary: Semantic validation beyond schema
-    id: RQM-009
-    status: implemented
-    owner: "@238855"
-    acceptance_criteria:
-      given: Syntactically valid YAML that passes schema
-      when: Running semantic validation
-      then: |
-        - Detects duplicate summaries
-        - Validates owner alias references exist
-        - Validates dependency references exist
-        - Checks for circular dependencies
-    dependencies: ["RQM-008"]
-    requirements:
-      - summary: Duplicate summary detection
-        id: RQM-009.1
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Multiple requirements with same summary
-          when: Validating configuration
-          then: |
-            - Collects all summaries in HashSet
-            - Detects duplicates
-            - Returns DuplicateSummary error with summary text
-        dependencies: []
-
-      - summary: Owner reference validation
-        id: RQM-009.2
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Owner field referencing an alias
-          when: Validating owner
-          then: |
-            - Checks if alias exists in aliases map
-            - Returns InvalidOwner error if not found
-            - Accepts direct email/GitHub handles
-        dependencies: []
-
-      - summary: Dependency reference validation
-        id: RQM-009.3
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Dependency list in requirement
-          when: Validating dependencies
-          then: |
-            - Verifies each dependency summary exists
-            - Returns InvalidReference error if not found
-            - Builds valid dependency graph
-        dependencies: ["RQM-009.1"]
-
-  - summary: Comprehensive test coverage
-    id: RQM-010
-    status: implemented
-    owner: "@238855"
-    acceptance_criteria:
-      given: Rust core implementation
-      when: Running cargo test
-      then: |
-        - All 24 unit tests pass
-        - Zero clippy warnings
-        - Tests cover happy path and error cases
-        - Uses tempfile for filesystem tests
-    dependencies: []
-    requirements:
-      - summary: Graph module tests
-        id: RQM-010.1
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: RequirementGraph implementation
-          when: Running tests
-          then: |
-            - test_graph_creation passes
-            - test_circular_reference passes
-            - test_no_cycles passes
-            - test_traverse passes
-            - test_dependencies passes
-        dependencies: []
-
-      - summary: Metadata module tests
-        id: RQM-010.2
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: MetadataStore implementation
-          when: Running tests
-          then: |
-            - test_kebab_case passes
-            - test_project_config_next_id passes
-            - test_metadata_store_init passes
-            - test_metadata_creation passes
-            - test_metadata_persistence passes
-        dependencies: []
-
-      - summary: Validator module tests
-        id: RQM-010.3
-        status: implemented
-        owner: "@238855"
-        acceptance_criteria:
-          given: Validator implementation
-          when: Running tests
-          then: |
-            - test_validate_simple_config passes
-            - test_duplicate_summary passes
-            - test_email_owner passes
-            - test_valid_alias_owner passes
-            - test_invalid_alias_owner passes
-        dependencies: []
-
-  - summary: Monorepo structure with multiple languages
-    id: RQM-011
-    status: implemented
-    owner: "@238855"
-    acceptance_criteria:
-      given: Project requirements for polyglot system
-      when: Setting up repository
-      then: |
-        - rust-core/ directory for Rust library
-        - go-cli/ directory for Go CLI
-        - web-ui/ directory for React frontend
-        - .rqm/ directory for project requirements
-        - tests/ directory for acceptance tests
-    dependencies: []
-
-  - summary: Git conventional commits with enforcement
-    id: RQM-012
-    status: implemented
-    owner: "@238855"
-    acceptance_criteria:
-      given: Git repository with commits
-      when: Developer attempts to commit
-      then: |
-        - Commitlint validates commit message format
-        - Husky runs pre-commit hooks
-        - Enforces type(scope): subject format
-        - Blocks invalid commits
-        - Runs Rust tests before commit
-    dependencies: []
