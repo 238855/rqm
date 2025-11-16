@@ -13,15 +13,18 @@
 //! - Build requirement graphs with circular reference detection
 //! - Query and traverse requirement trees
 //! - Export to various formats
+//! - Automatic ID generation with metadata management
 
 pub mod error;
 pub mod graph;
+pub mod metadata;
 pub mod parser;
 pub mod types;
 pub mod validator;
 
 pub use error::{Error, Result};
 pub use graph::RequirementGraph;
+pub use metadata::{kebab_case, MetadataStore, ProjectConfig, RequirementMetadata};
 pub use parser::Parser;
 pub use types::{OwnerReference, PersonAlias, Requirement, RequirementConfig};
 pub use validator::Validator;

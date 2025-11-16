@@ -228,3 +228,88 @@ requirements:
 further_information:
   - https://github.com/238855/rqm
   - "This file demonstrates self-hosting: RQM managing its own requirements"
+
+  - summary: Automatic ID generation with metadata management
+    id: RQM-005
+    status: proposed
+    owner: "@238855"
+    acceptance_criteria:
+      given: User writes requirements YAML without specifying id field
+      when: RQM processes the requirements file
+      then: |
+        - Auto-generates sequential ID from configured project prefix (e.g., RQM-001)
+        - Generates UUID for stable tracking across refactors
+        - Uses kebab-case summary as human-readable identifier
+        - Stores metadata in .rqm/.metadata/<kebab-summary>.json
+        - User never sees or manages IDs/UUIDs manually
+        - Changes to summary update metadata, preserve UUID
+    dependencies: []
+    sub_requirements:
+      - summary: Add project configuration for ID prefix
+        id: RQM-005.1
+        status: proposed
+        owner: "@238855"
+        acceptance_criteria:
+          given: New project initializes RQM
+          when: User runs 'rqm init'
+          then: |
+            - Creates .rqm/config.yml with project_prefix field
+            - Prompts user for prefix (default: project name uppercase)
+            - Stores next_id counter in metadata
+        dependencies: []
+
+      - summary: Implement metadata store for requirement tracking
+        id: RQM-005.2
+        status: proposed
+        owner: "@238855"
+        acceptance_criteria:
+          given: Requirements file with summaries
+          when: RQM processes requirements
+          then: |
+            - Creates .rqm/.metadata/ directory (gitignored by default)
+            - Each requirement gets <kebab-summary>.json metadata file
+            - Metadata contains: uuid, generated_id, summary_hash, created_at, updated_at
+            - Metadata persists across summary changes via UUID tracking
+        dependencies: ["RQM-005.1"]
+
+      - summary: Remove id field from user-facing YAML schema
+        id: RQM-005.3
+        status: proposed
+        owner: "@238855"
+        acceptance_criteria:
+          given: User writes requirements YAML
+          when: Defining a requirement
+          then: |
+            - Only summary, status, owner, acceptance_criteria required
+            - id field optional (ignored if present, generated otherwise)
+            - dependencies reference kebab-case summaries, not IDs
+            - Backward compatible with existing ID-based files
+        dependencies: ["RQM-005.2"]
+
+      - summary: Implement kebab-case summary as primary identifier
+        id: RQM-005.4
+        status: proposed
+        owner: "@238855"
+        acceptance_criteria:
+          given: Requirement with summary "Automatic ID generation with metadata"
+          when: Processing dependencies and references
+          then: |
+            - Generates kebab-case: "automatic-id-generation-with-metadata"
+            - Dependencies can reference via kebab-case or generated ID
+            - Detects summary hash changes, prompts for merge/new requirement
+            - Enforces uniqueness of kebab-case summaries
+        dependencies: ["RQM-005.3"]
+
+      - summary: Update Rust types for metadata system
+        id: RQM-005.5
+        status: proposed
+        owner: "@238855"
+        acceptance_criteria:
+          given: Current Requirement struct with mandatory id field
+          when: Refactoring for metadata system
+          then: |
+            - Add RequirementMetadata struct (uuid, generated_id, created_at, updated_at, summary_hash)
+            - Make Requirement.id Option<String> (legacy support)
+            - Add kebab_case_id() method
+            - Add metadata module for metadata I/O
+        dependencies: ["RQM-005.4"]
