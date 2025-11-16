@@ -1,0 +1,7 @@
+version: "1.0"
+requirements:
+  - summary: Feature with criteria
+    acceptance_criteria:
+      given: Initial condition
+      when: Action occurs
+      then: Expected result

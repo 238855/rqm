@@ -1,0 +1,10 @@
+version: "1.0"
+requirements:
+  - summary: Has Test Link
+    name: REQ-001
+    acceptance_test_link: https://example.com/test1.sh
+  - summary: No Test Link
+    name: REQ-002
+  - summary: Also Has Test
+    name: REQ-003
+    acceptance_test_link: https://example.com/test3.sh

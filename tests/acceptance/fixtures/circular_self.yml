@@ -1,0 +1,6 @@
+version: "1.0"
+requirements:
+  - summary: Self Referencing Requirement
+    name: REQ-SELF
+    dependencies:
+      - REQ-SELF

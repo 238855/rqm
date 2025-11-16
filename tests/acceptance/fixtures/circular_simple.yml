@@ -1,0 +1,10 @@
+version: "1.0"
+requirements:
+  - summary: Requirement A
+    name: REQ-A
+    dependencies:
+      - REQ-B
+  - summary: Requirement B
+    name: REQ-B
+    dependencies:
+      - REQ-A

@@ -276,6 +276,28 @@ main() {
         echo -e "  Pass rate:                ${CYAN}${pass_rate}%${NC}"
     fi
     
+    # Code Coverage
+    echo ""
+    echo -e "${BOLD}Code Coverage:${NC}"
+    
+    # Check for Go coverage
+    if [[ -f "$PROJECT_ROOT/.coverage/go-coverage.out" ]]; then
+        local go_cov=$(go tool cover -func="$PROJECT_ROOT/.coverage/go-coverage.out" 2>/dev/null | grep total | awk '{print $3}' || echo "N/A")
+        echo -e "  Go (CLI):                 ${CYAN}${go_cov}${NC}"
+    else
+        echo -e "  Go (CLI):                 ${YELLOW}Run ./tests/acceptance/collect_coverage.sh${NC}"
+    fi
+    
+    # Check for Rust coverage
+    if [[ -f "$PROJECT_ROOT/.coverage/rust-coverage.json" ]] && command -v jq > /dev/null 2>&1; then
+        local rust_cov=$(jq -r '.data[0].totals.lines.percent' "$PROJECT_ROOT/.coverage/rust-coverage.json" 2>/dev/null || echo "N/A")
+        echo -e "  Rust (Core):              ${CYAN}${rust_cov}%${NC}"
+    elif command -v cargo-llvm-cov > /dev/null 2>&1; then
+        echo -e "  Rust (Core):              ${YELLOW}Run ./tests/acceptance/collect_coverage.sh${NC}"
+    else
+        echo -e "  Rust (Core):              ${YELLOW}Install cargo-llvm-cov for coverage${NC}"
+    fi
+    
     echo ""
     
     # Exit with appropriate code

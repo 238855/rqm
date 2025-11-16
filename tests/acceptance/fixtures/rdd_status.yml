@@ -1,0 +1,12 @@
+version: "1.0"
+requirements:
+  - summary: Draft Requirement
+    status: draft
+  - summary: Proposed Requirement
+    status: proposed
+  - summary: Approved Requirement
+    status: approved
+  - summary: Implemented Requirement
+    status: implemented
+  - summary: Verified Requirement
+    status: verified

@@ -1,0 +1,21 @@
+version: "1.0"
+requirements:
+  - summary: Level 1
+    requirements:
+      - summary: Level 2
+        requirements:
+          - summary: Level 3
+            requirements:
+              - summary: Level 4
+                requirements:
+                  - summary: Level 5
+                    requirements:
+                      - summary: Level 6
+                        requirements:
+                          - summary: Level 7
+                            requirements:
+                              - summary: Level 8
+                                requirements:
+                                  - summary: Level 9
+                                    requirements:
+                                      - summary: Level 10

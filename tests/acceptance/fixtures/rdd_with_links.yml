@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: Feature with acceptance test
+    name: FEAT-001
+    acceptance_test_link: https://github.com/example/repo/blob/main/tests/test_feature.sh
+    acceptance_test: |
+      Given a user
+      When they use the feature
+      Then it works as expected

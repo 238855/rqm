@@ -1,0 +1,15 @@
+version: "1.0"
+requirements:
+  - summary: Root
+    name: REQ-A
+    requirements:
+      - summary: Branch 1
+        name: REQ-B
+        requirements:
+          - REQ-D
+      - summary: Branch 2
+        name: REQ-C
+        requirements:
+          - REQ-D
+  - summary: Common Child
+    name: REQ-D

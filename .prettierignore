@@ -38,3 +38,8 @@ Thumbs.db
 package-lock.json
 Cargo.lock
 go.sum
+
+# Test fixtures (intentionally malformed)
+tests/acceptance/fixtures/cli_malformed.yml
+tests/acceptance/fixtures/*_malformed.yml
+tests/acceptance/fixtures/*_invalid.yml

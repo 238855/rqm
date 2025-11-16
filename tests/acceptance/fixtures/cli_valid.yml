@@ -1,0 +1,5 @@
+version: "1.0"
+requirements:
+  - summary: Valid Requirement
+    description: This is a valid requirement
+    status: proposed

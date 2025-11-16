@@ -37,6 +37,9 @@ yarn-error.log*
 # Test coverage
 coverage/
 *.coverprofile
+.coverage/
+*.profdata
+*.profraw
 
 # Temporary files
 tmp/
