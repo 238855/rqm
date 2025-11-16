@@ -52,3 +52,4 @@ temp/
 go-cli/rqm
 go-cli/requim
 .rqm/.metadata/
+rust-core/target/

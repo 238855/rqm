@@ -27,3 +27,7 @@ pretty_assertions = "1.4"
 name = "rqm_core"
 path = "src/lib.rs"
 crate-type = ["rlib", "cdylib"]
+
+[[bin]]
+name = "rqm-validator"
+path = "src/bin/rqm-validator.rs"
