@@ -383,8 +383,13 @@ main() {
     
     # Check for Go coverage
     if [[ -f "$PROJECT_ROOT/.coverage/go-coverage.out" ]]; then
-        local go_cov=$(go tool cover -func="$PROJECT_ROOT/.coverage/go-coverage.out" 2>/dev/null | grep total | awk '{print $3}' || echo "N/A")
+        # Need to run from go-cli directory for module path resolution
+        local go_cov=$(cd "$PROJECT_ROOT/go-cli" && go tool cover -func=../.coverage/go-coverage.out 2>/dev/null | grep total | awk '{print $3}' || echo "N/A")
         echo -e "  Go (CLI):                 ${CYAN}${go_cov}${NC}"
+    elif [[ -f "$PROJECT_ROOT/go-cli/coverage.out" ]]; then
+        # Fallback to go-cli directory
+        local go_cov=$(cd "$PROJECT_ROOT/go-cli" && go tool cover -func=coverage.out 2>/dev/null | grep total | awk '{print $3}' || echo "N/A")
+        echo -e "  Go (CLI):                 ${CYAN}${go_cov}${NC} (run collect_coverage.sh to consolidate)"
     else
         echo -e "  Go (CLI):                 ${YELLOW}Run ./tests/acceptance/collect_coverage.sh${NC}"
     fi
