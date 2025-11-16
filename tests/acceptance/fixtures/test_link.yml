@@ -1,0 +1,10 @@
+version: "1.0"
+requirements:
+  - summary: Requirement with Test Link
+    name: LINK-001
+    description: Has acceptance test link
+    justification: Testing RDD workflow
+    owner: test@example.com
+    priority: high
+    status: implemented
+    acceptance_test_link: https://github.com/example/rqm/blob/main/tests/test_feature.sh

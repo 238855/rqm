@@ -1,0 +1,14 @@
+version: "1.0"
+requirements:
+  - summary: GitHub URL
+    name: URL-001
+    owner: test@example.com
+    acceptance_test_link: https://github.com/org/repo/blob/main/tests/test.sh
+  - summary: File URI
+    name: URL-002
+    owner: test@example.com
+    acceptance_test_link: file:///path/to/tests/test.sh
+  - summary: HTTPS URL
+    name: URL-003
+    owner: test@example.com
+    acceptance_test_link: https://example.com/tests/test.sh

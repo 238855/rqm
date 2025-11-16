@@ -165,6 +165,7 @@ requirements:
             owner: claude
             priority: high
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm003_subrequirements.sh
             tags:
               - go-cli
 
@@ -178,6 +179,7 @@ requirements:
             owner: maintainer
             priority: critical
             status: proposed
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm003_subrequirements.sh
             tags:
               - go-cli
               - integration
@@ -209,6 +211,7 @@ requirements:
             owner: claude
             priority: high
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm004_subrequirements.sh
             tags:
               - schema
 
@@ -222,6 +225,7 @@ requirements:
             owner: maintainer
             priority: medium
             status: draft
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm004_subrequirements.sh
             tags:
               - cli
               - testing

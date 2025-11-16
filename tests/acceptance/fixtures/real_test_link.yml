@@ -1,0 +1,8 @@
+version: "1.0"
+requirements:
+  - summary: Real Test Reference
+    name: REAL-001
+    description: Links to actual test file
+    justification: RDD validation
+    owner: test@example.com
+    acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_validation.sh

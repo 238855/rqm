@@ -1,0 +1,15 @@
+version: "1.0"
+requirements:
+  - summary: Parent Requirement
+    name: PARENT-001
+    description: Has nested requirements with test links
+    justification: Testing nested RDD
+    owner: test@example.com
+    acceptance_test_link: https://github.com/example/tests/parent.sh
+    requirements:
+      - summary: Child Requirement
+        name: CHILD-001
+        description: Nested requirement
+        justification: Testing
+        owner: test@example.com
+        acceptance_test_link: https://github.com/example/tests/child.sh

@@ -1,0 +1,19 @@
+version: "1.0"
+requirements:
+  - summary: Feature A
+    name: FEAT-A
+    description: First feature
+    justification: Testing
+    owner: test@example.com
+    acceptance_test_link: https://github.com/example/tests/test_a.sh
+  - summary: Feature B
+    name: FEAT-B
+    description: Second feature
+    justification: Testing
+    owner: test@example.com
+    acceptance_test_link: https://github.com/example/tests/test_b.sh
+  - summary: Feature C
+    name: FEAT-C
+    description: Third feature without link
+    justification: Testing
+    owner: test@example.com

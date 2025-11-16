@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: CLI Integration Test
+    name: INT-001
+    description: Ensures CLI calls Rust validator
+    justification: Integration testing
+    owner: integration@example.com
+    priority: high
+    status: draft

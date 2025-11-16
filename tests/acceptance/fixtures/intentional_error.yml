@@ -1,0 +1,12 @@
+version: "1.0"
+requirements:
+  - summary: Error Test
+    name: ERR-001
+    description: First requirement
+    justification: Testing
+    owner: test@example.com
+  - summary: Error Test
+    name: ERR-002
+    description: Duplicate summary (should fail)
+    justification: Testing
+    owner: test@example.com

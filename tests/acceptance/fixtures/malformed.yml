@@ -1,0 +1,4 @@
+version: "1.0"
+requirements:
+  - summary: Malformed
+    ][[[invalid yaml syntax here

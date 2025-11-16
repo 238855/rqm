@@ -1,0 +1,7 @@
+version: "1.0"
+requirements:
+  - summary: Extension Test
+    name: EXT-001
+    description: Tests extension handling
+    justification: Testing
+    owner: test@example.com

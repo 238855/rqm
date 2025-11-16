@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: Relative Path Test
+    name: REL-001
+    description: Tests relative path handling
+    justification: Testing
+    owner: test@example.com
+    priority: medium
+    status: draft
