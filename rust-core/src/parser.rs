@@ -86,4 +86,96 @@ requirements:
         assert_eq!(parsed.version, config.version);
         assert_eq!(parsed.requirements.len(), 1);
     }
+
+    #[test]
+    fn test_parse_invalid_yaml() {
+        let yaml = "invalid: yaml: [unclosed";
+        let result = Parser::parse_str(yaml);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_empty_string() {
+        let yaml = "";
+        let result = Parser::parse_str(yaml);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_with_nested_requirements() {
+        let yaml = r#"
+version: "1.0"
+requirements:
+  - summary: Parent
+    owner: test@example.com
+    requirements:
+      - summary: Child
+        owner: test@example.com
+"#;
+
+        let config = Parser::parse_str(yaml).unwrap();
+        assert_eq!(config.requirements.len(), 1);
+        assert_eq!(config.requirements[0].requirements.len(), 1);
+    }
+
+    #[test]
+    fn test_to_yaml() {
+        let mut req = Requirement::new("Test Requirement");
+        req.owner = Some(crate::types::OwnerReference::String("test@example.com".to_string()));
+        req.status = Some(crate::types::Status::Draft);
+
+        let config = RequirementConfig {
+            version: "1.0".to_string(),
+            aliases: vec![],
+            requirements: vec![req],
+        };
+
+        let yaml = Parser::to_yaml(&config).unwrap();
+        assert!(yaml.contains("Test Requirement"));
+        assert!(yaml.contains("test@example.com"));
+        assert!(yaml.contains("draft"));
+    }
+
+    #[test]
+    fn test_parse_file_not_found() {
+        let result = Parser::parse_file("nonexistent_file.yml");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_with_all_fields() {
+        let yaml = r#"
+version: "1.0"
+requirements:
+  - summary: Complete Requirement
+    name: REQ-001
+    description: A complete requirement with all fields
+    justification: Testing purposes
+    acceptance_test: Should parse correctly
+    acceptance_test_link: https://example.com/test
+    owner: test@example.com
+    priority: high
+    status: implemented
+    tags:
+      - test
+      - complete
+    further_information:
+      - https://example.com/docs
+"#;
+
+        let config = Parser::parse_str(yaml).unwrap();
+        let req = &config.requirements[0];
+        
+        assert_eq!(req.summary, "Complete Requirement");
+        assert_eq!(req.name, Some("REQ-001".to_string()));
+        assert!(req.description.is_some());
+        assert!(req.justification.is_some());
+        assert!(req.acceptance_test.is_some());
+        assert!(req.acceptance_test_link.is_some());
+        assert_eq!(req.priority, Some(crate::types::Priority::High));
+        assert_eq!(req.status, Some(crate::types::Status::Implemented));
+        assert_eq!(req.tags.len(), 2);
+        assert_eq!(req.further_information.len(), 1);
+    }
 }
+

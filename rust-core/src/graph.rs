@@ -320,4 +320,188 @@ mod tests {
         let cycles = graph.find_cycles();
         assert!(!cycles.is_empty());
     }
+
+    #[test]
+    fn test_self_reference() {
+        let mut req = Requirement::new("Self Ref");
+        req.requirements
+            .push(RequirementReference::Reference("Self Ref".to_string()));
+
+        let config = RequirementConfig {
+            version: "1.0".to_string(),
+            aliases: vec![],
+            requirements: vec![req],
+        };
+
+        let graph = RequirementGraph::from_config(&config).unwrap();
+        assert!(graph.has_cycles());
+    }
+
+    #[test]
+    fn test_topological_sort_acyclic() {
+        let config = create_test_config();
+        let graph = RequirementGraph::from_config(&config).unwrap();
+
+        let sorted = graph.topological_sort().unwrap();
+        assert_eq!(sorted.len(), 3);
+    }
+
+    #[test]
+    fn test_topological_sort_cyclic() {
+        let mut req1 = Requirement::new("A");
+        let mut req2 = Requirement::new("B");
+        
+        req1.requirements
+            .push(RequirementReference::Reference("B".to_string()));
+        req2.requirements
+            .push(RequirementReference::Reference("A".to_string()));
+
+        let config = RequirementConfig {
+            version: "1.0".to_string(),
+            aliases: vec![],
+            requirements: vec![req1, req2],
+        };
+
+        let graph = RequirementGraph::from_config(&config).unwrap();
+        let result = graph.topological_sort();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_requirement() {
+        let config = create_test_config();
+        let graph = RequirementGraph::from_config(&config).unwrap();
+
+        let req = graph.get("Requirement 1");
+        assert!(req.is_some());
+        assert_eq!(req.unwrap().summary, "Requirement 1");
+
+        let missing = graph.get("Nonexistent");
+        assert!(missing.is_none());
+    }
+
+    #[test]
+    fn test_dependencies_not_found() {
+        let config = create_test_config();
+        let graph = RequirementGraph::from_config(&config).unwrap();
+
+        let result = graph.dependencies("Nonexistent");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_traverse_not_found() {
+        let config = create_test_config();
+        let graph = RequirementGraph::from_config(&config).unwrap();
+
+        let result = graph.traverse("Nonexistent", |_, _| Ok(()));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_traverse_with_depth() {
+        let config = create_test_config();
+        let graph = RequirementGraph::from_config(&config).unwrap();
+
+        let mut max_depth = 0;
+        graph
+            .traverse("Requirement 1", |_req, depth| {
+                if depth > max_depth {
+                    max_depth = depth;
+                }
+                Ok(())
+            })
+            .unwrap();
+
+        assert!(max_depth > 0);
+    }
+
+    #[test]
+    fn test_multiple_cycles() {
+        // Create a graph with multiple separate cycles
+        let mut req1 = Requirement::new("A");
+        let mut req2 = Requirement::new("B");
+        let mut req3 = Requirement::new("C");
+        let mut req4 = Requirement::new("D");
+
+        // Cycle 1: A -> B -> A
+        req1.requirements
+            .push(RequirementReference::Reference("B".to_string()));
+        req2.requirements
+            .push(RequirementReference::Reference("A".to_string()));
+
+        // Cycle 2: C -> D -> C
+        req3.requirements
+            .push(RequirementReference::Reference("D".to_string()));
+        req4.requirements
+            .push(RequirementReference::Reference("C".to_string()));
+
+        let config = RequirementConfig {
+            version: "1.0".to_string(),
+            aliases: vec![],
+            requirements: vec![req1, req2, req3, req4],
+        };
+
+        let graph = RequirementGraph::from_config(&config).unwrap();
+        assert!(graph.has_cycles());
+
+        let cycles = graph.find_cycles();
+        assert!(cycles.len() >= 2);
+    }
+
+    #[test]
+    fn test_complex_cycle() {
+        // Three-node cycle: A -> B -> C -> A
+        let mut req1 = Requirement::new("A");
+        let mut req2 = Requirement::new("B");
+        let mut req3 = Requirement::new("C");
+
+        req1.requirements
+            .push(RequirementReference::Reference("B".to_string()));
+        req2.requirements
+            .push(RequirementReference::Reference("C".to_string()));
+        req3.requirements
+            .push(RequirementReference::Reference("A".to_string()));
+
+        let config = RequirementConfig {
+            version: "1.0".to_string(),
+            aliases: vec![],
+            requirements: vec![req1, req2, req3],
+        };
+
+        let graph = RequirementGraph::from_config(&config).unwrap();
+        assert!(graph.has_cycles());
+
+        let cycles = graph.find_cycles();
+        assert_eq!(cycles.len(), 1);
+        assert_eq!(cycles[0].len(), 3);
+    }
+
+    #[test]
+    fn test_empty_graph() {
+        let config = RequirementConfig {
+            version: "1.0".to_string(),
+            aliases: vec![],
+            requirements: vec![],
+        };
+
+        let graph = RequirementGraph::from_config(&config).unwrap();
+        assert!(!graph.has_cycles());
+        assert_eq!(graph.requirements.len(), 0);
+    }
+
+    #[test]
+    fn test_single_requirement() {
+        let req = Requirement::new("Single");
+        let config = RequirementConfig {
+            version: "1.0".to_string(),
+            aliases: vec![],
+            requirements: vec![req],
+        };
+
+        let graph = RequirementGraph::from_config(&config).unwrap();
+        assert!(!graph.has_cycles());
+        assert_eq!(graph.requirements.len(), 1);
+    }
 }
+
