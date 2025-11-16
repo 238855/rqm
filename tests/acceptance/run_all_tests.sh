@@ -397,6 +397,10 @@ main() {
     # Check for Rust coverage
     if [[ -f "$PROJECT_ROOT/.coverage/rust-coverage.json" ]] && command -v jq > /dev/null 2>&1; then
         local rust_cov=$(jq -r '.data[0].totals.lines.percent' "$PROJECT_ROOT/.coverage/rust-coverage.json" 2>/dev/null || echo "N/A")
+        # Format to 1 decimal place if it's a number
+        if [[ "$rust_cov" != "N/A" ]]; then
+            rust_cov=$(printf "%.1f" "$rust_cov")
+        fi
         echo -e "  Rust (Core):              ${CYAN}${rust_cov}%${NC}"
     elif command -v cargo-llvm-cov > /dev/null 2>&1; then
         echo -e "  Rust (Core):              ${YELLOW}Run ./tests/acceptance/collect_coverage.sh${NC}"

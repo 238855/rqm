@@ -31,26 +31,25 @@ cd "$PROJECT_ROOT/rust-core"
 if cargo llvm-cov --version > /dev/null 2>&1; then
     echo "Using cargo llvm-cov..."
     
-    # Generate coverage
-    cargo llvm-cov --no-report --workspace > /dev/null 2>&1 || true
+    # Generate coverage with all reports
+    cargo llvm-cov --all-features --workspace --json --output-path "$COVERAGE_DIR/rust-coverage.json" > /dev/null 2>&1
+    cargo llvm-cov --all-features --workspace --lcov --output-path "$COVERAGE_DIR/rust-coverage.lcov" > /dev/null 2>&1
     
-    # Generate JSON report
-    if cargo llvm-cov report --json > "$COVERAGE_DIR/rust-coverage.json" 2>/dev/null; then
-        # Extract coverage percentage
-        if command -v jq > /dev/null 2>&1; then
-            RUST_COV=$(jq -r '.data[0].totals.lines.percent' "$COVERAGE_DIR/rust-coverage.json" 2>/dev/null || echo "N/A")
-            echo -e "${GREEN}✓${NC} Rust line coverage: ${RUST_COV}%"
-        else
-            echo -e "${GREEN}✓${NC} Rust coverage collected (install jq for percentage)"
-        fi
+    # Generate text summary
+    cargo llvm-cov --all-features --workspace > "$COVERAGE_DIR/rust-coverage.txt" 2>&1
+    
+    # Extract coverage percentage
+    if command -v jq > /dev/null 2>&1 && [ -f "$COVERAGE_DIR/rust-coverage.json" ]; then
+        RUST_COV=$(jq -r '.data[0].totals.lines.percent' "$COVERAGE_DIR/rust-coverage.json" 2>/dev/null | awk '{printf "%.1f", $1}')
+        echo -e "${GREEN}✓${NC} Rust line coverage: ${RUST_COV}%"
+    else
+        echo -e "${GREEN}✓${NC} Rust coverage collected (install jq for percentage)"
     fi
-    
-    # Generate human-readable report
-    cargo llvm-cov report --summary-only > "$COVERAGE_DIR/rust-coverage.txt" 2>&1 || echo "Basic Rust coverage complete"
     
 else
     echo -e "${YELLOW}⚠${NC} cargo llvm-cov not installed, using basic test run"
     echo "  Install with: cargo install cargo-llvm-cov"
+    echo "  Also need: rustup component add llvm-tools-preview"
     
     # Fallback: just run tests
     cargo test > /dev/null 2>&1
