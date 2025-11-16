@@ -94,11 +94,25 @@ Coverage: Requires `cargo-llvm-cov` + `llvm-tools-preview`
 
 Run: `go test -v ./...`
 
-Coverage: 24.1% (7 tests)
+Coverage: 73.6% (26 tests)
 
 Tests:
-- `cmd/validate_test.go`: Validation command integration
-- Core CLI command functionality
+- `cmd/validate_test.go`: Validation command integration (7 tests)
+- `cmd/list_test.go`: List command with all formats (15 tests)
+- `cmd/check_test.go`: Cycle detection and graph commands (4 tests)
+
+Coverage breakdown:
+- `validate.go`: 80.8% (validation command)
+- `list.go`: 88.9-100% (display functions)
+- `check.go`: Covered via integration tests
+- Helper functions: 100% (status symbols, priority indicators)
+
+To view detailed coverage:
+```bash
+cd go-cli
+go test -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+```
 
 ## Current Coverage
 
@@ -124,14 +138,14 @@ Pass rate:                100.0% ✓
 
 ### Code Coverage
 
-- **Go (CLI)**: 24.1%
+- **Go (CLI)**: 73.6% (26 unit tests)
 - **Rust (Core)**: Requires `llvm-tools-preview` installation
 
-To improve Go coverage:
+To view Go coverage breakdown:
 ```bash
 cd go-cli
-go test -v -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
+go test -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
 ```
 
 ## Running Tests
@@ -280,7 +294,7 @@ Without these, Rust coverage metrics won't be displayed.
 
 ## Future Enhancements
 
-1. **Increase Go Unit Test Coverage**: Target 50%+ (currently 24.1%)
+1. **Increase Go Unit Test Coverage**: Target 80%+ (currently 73.6%)
 2. **Rust Coverage Integration**: Install llvm-tools for detailed metrics
 3. **Performance Benchmarks**: Add `test_performance.sh` for large files
 4. **Web UI Tests**: Add Playwright/Cypress tests for React components
@@ -307,7 +321,8 @@ Without these, Rust coverage metrics won't be displayed.
 1. All acceptance tests must pass (88/88)
 2. No decrease in requirements coverage (100%)
 3. Run `./collect_coverage.sh` to check code coverage
-4. Go coverage should not decrease from 24.1%
+4. Go coverage should not decrease from 73.6%
+5. Rust tests should pass (24/24)
 
 ## Resources
 
