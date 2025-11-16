@@ -1,0 +1,28 @@
+[package]
+name = "rqm-core"
+version = "0.1.0"
+edition = "2021"
+authors = ["238855"]
+license = "MIT"
+description = "Core library for RQM (Requirements Management in Code)"
+repository = "https://github.com/238855/rqm"
+keywords = ["requirements", "management", "yaml", "validation"]
+categories = ["development-tools", "parsing"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+thiserror = "1.0"
+petgraph = "0.6"
+jsonschema = "0.18"
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tempfile = "3.8"
+pretty_assertions = "1.4"
+
+[lib]
+name = "rqm_core"
+path = "src/lib.rs"
+crate-type = ["rlib", "cdylib"]

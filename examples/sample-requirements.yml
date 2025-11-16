@@ -1,0 +1,120 @@
+version: "1.0"
+
+aliases:
+  - alias: alice
+    name: Alice Developer
+    email: alice@example.com
+    github: alicedev
+    
+  - alias: bob
+    name: Bob Engineer
+    email: bob@example.com
+    github: bobeng
+
+requirements:
+  - summary: User Authentication System
+    name: AUTH-001
+    description: |
+      The system must provide secure user authentication
+      using industry-standard protocols including OAuth2 and SAML.
+    justification: |
+      User authentication is critical for protecting user data
+      and ensuring compliance with security standards.
+    acceptance_test: |
+      - User can register with email and password
+      - User can log in with valid credentials
+      - User receives appropriate error messages for invalid credentials
+      - Session management works correctly
+    acceptance_test_link: https://github.com/example/tests/auth
+    owner: alice
+    priority: critical
+    status: approved
+    tags:
+      - security
+      - authentication
+      - mvp
+    requirements:
+      - summary: Password Hashing
+        name: AUTH-001.1
+        description: All passwords must be hashed using bcrypt with minimum cost factor of 12
+        justification: Protects user passwords from breach
+        owner: alice
+        priority: critical
+        status: implemented
+        tags:
+          - security
+          - cryptography
+          
+      - summary: OAuth2 Integration
+        name: AUTH-001.2
+        description: Support OAuth2 authentication for Google, GitHub, and Microsoft
+        owner: bob
+        priority: high
+        status: proposed
+        tags:
+          - oauth
+          - integration
+          
+      - summary: Multi-Factor Authentication
+        name: AUTH-001.3
+        description: Optional MFA using TOTP (Time-based One-Time Password)
+        owner: alice
+        priority: medium
+        status: draft
+        tags:
+          - security
+          - mfa
+        further_information:
+          - https://datatracker.ietf.org/doc/html/rfc6238
+          - "Consider supporting WebAuthn in future versions"
+          
+  - summary: Data Encryption
+    name: SEC-001
+    description: All sensitive data must be encrypted at rest and in transit
+    justification: Compliance with GDPR and SOC2 requirements
+    owner: alice
+    priority: critical
+    status: approved
+    tags:
+      - security
+      - encryption
+      - compliance
+    requirements:
+      - summary: TLS 1.3 for Transport
+        description: All API endpoints must use TLS 1.3 or higher
+        owner: bob
+        priority: critical
+        status: implemented
+        
+      - summary: Database Encryption
+        description: Sensitive database fields encrypted using AES-256
+        owner: alice
+        priority: high
+        status: approved
+        
+  - summary: API Rate Limiting
+    name: API-001
+    description: Implement rate limiting to prevent abuse and ensure fair usage
+    owner: bob
+    priority: high
+    status: proposed
+    tags:
+      - api
+      - performance
+      - security
+    further_information:
+      - https://datatracker.ietf.org/doc/html/rfc6585
+      
+  - summary: Audit Logging
+    name: AUD-001
+    description: All security-relevant events must be logged with sufficient detail
+    justification: Required for security incident investigation and compliance
+    owner: alice@example.com
+    priority: high
+    status: implemented
+    tags:
+      - security
+      - compliance
+      - logging
+    requirements:
+      - Password Hashing  # Reference to existing requirement by summary

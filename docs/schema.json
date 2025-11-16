@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/238855/rqm/schema/v1",
+  "title": "RQM Requirements Schema",
+  "description": "JSON Schema for RQM YAML requirement files",
+  "type": "object",
+  "required": ["version", "requirements"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "pattern": "^\\d+\\.\\d+$",
+      "examples": ["1.0"]
+    },
+    "aliases": {
+      "type": "array",
+      "description": "Person aliases for requirement ownership",
+      "items": {
+        "$ref": "#/$defs/person_alias"
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "description": "Top-level requirements",
+      "items": {
+        "$ref": "#/$defs/requirement"
+      }
+    }
+  },
+  "$defs": {
+    "person_alias": {
+      "type": "object",
+      "required": ["alias"],
+      "properties": {
+        "alias": {
+          "type": "string",
+          "description": "Short alias identifier",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the person"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address"
+        },
+        "github": {
+          "type": "string",
+          "description": "GitHub username",
+          "pattern": "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "owner_reference": {
+      "type": "string",
+      "description": "Reference to a person: email, GitHub username (@user), or alias",
+      "minLength": 1
+    },
+    "requirement_reference": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Reference to a requirement by summary"
+        },
+        {
+          "$ref": "#/$defs/requirement"
+        }
+      ]
+    },
+    "requirement": {
+      "type": "object",
+      "required": ["summary"],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Short, unique identifier for the requirement",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "name": {
+          "type": "string",
+          "description": "Optional human-friendly name or ID (e.g., REQ-001)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of the requirement"
+        },
+        "justification": {
+          "type": "string",
+          "description": "Rationale for why this requirement exists"
+        },
+        "acceptance_test": {
+          "type": "string",
+          "description": "Acceptance criteria or test description"
+        },
+        "acceptance_test_link": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to acceptance test documentation or test case"
+        },
+        "owner": {
+          "$ref": "#/$defs/owner_reference"
+        },
+        "requirements": {
+          "type": "array",
+          "description": "Child requirements or references to requirements",
+          "items": {
+            "$ref": "#/$defs/requirement_reference"
+          }
+        },
+        "further_information": {
+          "type": "array",
+          "description": "Additional documentation, links, or notes",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to external resource"
+              },
+              {
+                "type": "string",
+                "description": "Textual information"
+              }
+            ]
+          }
+        },
+        "tags": {
+          "type": "array",
+          "description": "Optional tags for categorization",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "description": "Priority level of the requirement"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "proposed", "approved", "implemented", "verified", "deprecated"],
+          "description": "Current status of the requirement"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the requirement was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the requirement was last updated"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

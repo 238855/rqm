@@ -1,0 +1,33 @@
+{
+  "name": "rqm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Requirements Management in Code - A polyglot monorepo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/238855/rqm.git"
+  },
+  "author": "238855",
+  "license": "MIT",
+  "workspaces": [
+    "web-ui",
+    "ts-cli"
+  ],
+  "scripts": {
+    "prepare": "husky",
+    "test": "npm run test:rust",
+    "test:rust": "cd rust-core && cargo test",
+    "test:go": "test -d go-cli/go.mod && cd go-cli && go test ./... || echo 'Go CLI not yet initialized'",
+    "lint": "npm run lint:rust",
+    "lint:rust": "cd rust-core && cargo clippy -- -D warnings",
+    "lint:go": "test -d go-cli/go.mod && cd go-cli && golangci-lint run || echo 'Go CLI not yet initialized'",
+    "format": "npm run format:rust",
+    "format:rust": "cd rust-core && cargo fmt",
+    "format:go": "test -d go-cli/go.mod && cd go-cli && gofmt -w . || echo 'Go CLI not yet initialized'"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "husky": "^9.0.0"
+  }
+}

@@ -1,0 +1,49 @@
+# Rust
+rust-core/target/
+rust-core/Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Go
+go-cli/bin/
+go-cli/dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Test coverage
+coverage/
+*.coverprofile
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Environment
+.env
+.env.local
+.env.*.local
