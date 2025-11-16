@@ -1,0 +1,31 @@
+version: "1.0"
+requirements:
+  - summary: Level 1
+    name: DEPTH-1
+    description: Deep hierarchy test
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - summary: Level 2
+        name: DEPTH-2
+        description: Nested level 2
+        justification: Testing
+        owner: test@example.com
+        requirements:
+          - summary: Level 3
+            name: DEPTH-3
+            description: Nested level 3
+            justification: Testing
+            owner: test@example.com
+            requirements:
+              - summary: Level 4
+                name: DEPTH-4
+                description: Nested level 4
+                justification: Testing
+                owner: test@example.com
+                requirements:
+                  - summary: Level 5
+                    name: DEPTH-5
+                    description: Nested level 5
+                    justification: Testing
+                    owner: test@example.com

@@ -27,9 +27,9 @@ echo "────────────────────────�
 
 cd "$PROJECT_ROOT/rust-core"
 
-# Check if cargo-llvm-cov is installed
-if command -v cargo-llvm-cov > /dev/null 2>&1; then
-    echo "Using cargo-llvm-cov..."
+# Check if cargo llvm-cov is installed
+if cargo llvm-cov --version > /dev/null 2>&1; then
+    echo "Using cargo llvm-cov..."
     
     # Generate coverage
     cargo llvm-cov --no-report --workspace > /dev/null 2>&1 || true
@@ -49,7 +49,7 @@ if command -v cargo-llvm-cov > /dev/null 2>&1; then
     cargo llvm-cov report --summary-only > "$COVERAGE_DIR/rust-coverage.txt" 2>&1 || echo "Basic Rust coverage complete"
     
 else
-    echo -e "${YELLOW}⚠${NC} cargo-llvm-cov not installed, using basic test run"
+    echo -e "${YELLOW}⚠${NC} cargo llvm-cov not installed, using basic test run"
     echo "  Install with: cargo install cargo-llvm-cov"
     
     # Fallback: just run tests

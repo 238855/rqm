@@ -1,0 +1,20 @@
+version: "1.0"
+requirements:
+  - summary: Requirement A
+    name: CYCLE-A
+    description: References B
+    justification: Testing
+    owner: test@example.com
+    priority: medium
+    status: draft
+    requirements:
+      - Requirement B
+  - summary: Requirement B
+    name: CYCLE-B
+    description: References A (creates cycle)
+    justification: Testing
+    owner: test@example.com
+    priority: medium
+    status: draft
+    requirements:
+      - Requirement A

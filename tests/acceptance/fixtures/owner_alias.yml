@@ -1,0 +1,16 @@
+version: "1.0"
+aliases:
+  - alias: team-lead
+    name: Lead Developer
+    email: lead@example.com
+  - alias: backend-team
+    name: Backend Team
+    email: backend@example.com
+requirements:
+  - summary: Alias Owner Test
+    name: OWN-003
+    description: Tests alias as owner
+    justification: Owner validation
+    owner: team-lead
+    priority: medium
+    status: draft

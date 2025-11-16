@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: Self-Referencing Requirement
+    name: CYCLE-SELF
+    description: References itself
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Self-Referencing Requirement

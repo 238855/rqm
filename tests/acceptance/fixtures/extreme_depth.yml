@@ -1,0 +1,43 @@
+version: "1.0"
+requirements:
+  - summary: Root
+    name: EXTREME-ROOT
+    description: Very deep hierarchy
+    justification: Testing depth limits
+    owner: test@example.com
+    requirements:
+      - summary: Layer 1
+        name: LAYER-1
+        description: Deep layer
+        justification: Testing
+        owner: test@example.com
+        requirements:
+          - summary: Layer 2
+            name: LAYER-2
+            description: Deeper
+            justification: Testing
+            owner: test@example.com
+            requirements:
+              - summary: Layer 3
+                name: LAYER-3
+                description: Even deeper
+                justification: Testing
+                owner: test@example.com
+                requirements:
+                  - summary: Layer 4
+                    name: LAYER-4
+                    description: Very deep
+                    justification: Testing
+                    owner: test@example.com
+                    requirements:
+                      - summary: Layer 5
+                        name: LAYER-5
+                        description: Extremely deep
+                        justification: Testing
+                        owner: test@example.com
+                        requirements:
+                          - summary: Layer 6
+                            name: LAYER-6
+                            description: Maximum depth
+                            justification: Testing
+                            owner: test@example.com

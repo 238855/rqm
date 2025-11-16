@@ -1,0 +1,16 @@
+version: "1.0"
+requirements:
+  - summary: Duplicate Summary
+    name: DUP-001
+    description: First occurrence
+    justification: Testing
+    owner: test@example.com
+    priority: medium
+    status: draft
+  - summary: Duplicate Summary
+    name: DUP-002
+    description: Second occurrence (duplicate)
+    justification: Testing
+    owner: test@example.com
+    priority: medium
+    status: draft

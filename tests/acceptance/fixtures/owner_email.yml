@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: Email Owner Test
+    name: OWN-001
+    description: Tests email as owner
+    justification: Owner validation
+    owner: developer@example.com
+    priority: medium
+    status: draft

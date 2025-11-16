@@ -1,0 +1,16 @@
+version: "1.0"
+requirements:
+  - summary: Loop Start
+    name: LOOP-START
+    description: Creates cycle
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Loop End
+  - summary: Loop End
+    name: LOOP-END
+    description: Completes cycle
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Loop Start

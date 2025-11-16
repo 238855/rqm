@@ -142,27 +142,119 @@ find_test_for_requirement() {
     return 1
 }
 
-# Run a test file and capture results
+# Display countdown timer
+show_countdown() {
+    local duration=$1
+    local message=$2
+    local elapsed=0
+    
+    while [ $elapsed -lt $duration ]; do
+        local remaining=$((duration - elapsed))
+        printf "\r  ${CYAN}⏱${NC}  %s [%ds remaining]" "$message" "$remaining"
+        sleep 1
+        ((elapsed++)) || true
+    done
+    printf "\r"
+}
+
+# Run a test file with timeout and display output
 run_test_file() {
     local test_file="$1"
-    local output
+    local timeout="${2:-60}"  # Default 60 second timeout
+    local test_name
+    test_name=$(basename "$test_file")
+    
+    echo -e "  ${BLUE}▶${NC}  Running: $test_name (timeout: ${timeout}s)" >&2
+    echo "" >&2
+    
+    # Create temporary files for output and status
+    local output_file
+    output_file=$(mktemp)
+    local status_file
+    status_file=$(mktemp)
+    
+    # Run test in background
+    bash "$test_file" > "$output_file" 2>&1 &
+    local test_pid=$!
+    
+    local elapsed=0
+    local test_finished=false
+    
+    # Monitor progress with countdown
+    while [ $elapsed -lt $timeout ]; do
+        if ! kill -0 "$test_pid" 2>/dev/null; then
+            # Test finished
+            test_finished=true
+            break
+        fi
+        
+        local remaining=$((timeout - elapsed))
+        printf "\r  ${CYAN}⏱${NC}  Test running... [${remaining}s remaining]" >&2
+        sleep 1
+        ((elapsed++)) || true
+    done
+    printf "\r\033[K" >&2  # Clear the countdown line
+    
     local exit_code=0
     
-    # Run test and capture output
-    output=$(bash "$test_file" 2>&1) || exit_code=$?
+    if [ "$test_finished" = true ]; then
+        # Test completed within timeout
+        wait "$test_pid" 2>/dev/null || exit_code=$?
+        echo "$exit_code" > "$status_file"
+    else
+        # Test timed out - kill it
+        kill -9 "$test_pid" 2>/dev/null || true
+        wait "$test_pid" 2>/dev/null || true
+        echo "TIMEOUT" > "$status_file"
+    fi
+    
+    # Read the output and status
+    local output
+    output=$(cat "$output_file")
+    local read_exit_code
+    read_exit_code=$(cat "$status_file")
+    
+    # Display the full test output
+    echo -e "${BOLD}Test Output:${NC}" >&2
+    echo "────────────────────────────────────────────────────────────────────" >&2
+    echo "$output" >&2
+    echo "────────────────────────────────────────────────────────────────────" >&2
+    echo "" >&2
     
     # Parse test results from output
     local passed=0
     local failed=0
     
-    if echo "$output" | grep -q "All tests passed"; then
-        passed=$(echo "$output" | grep -oE '[0-9]+ tests passed' | grep -oE '[0-9]+' || echo "0")
-    elif echo "$output" | grep -q "Tests passed:"; then
-        passed=$(echo "$output" | grep "Tests passed:" | grep -oE '[0-9]+' | head -1 || echo "0")
-        failed=$(echo "$output" | grep "Tests failed:" | grep -oE '[0-9]+' | head -1 || echo "0")
+    if [ "$read_exit_code" = "TIMEOUT" ]; then
+        echo -e "  ${RED}✗${NC}  Test TIMED OUT after ${timeout}s" >&2
+        rm -f "$output_file" "$status_file"
+        echo "0|1|124"
+        return
     fi
     
-    echo "$passed|$failed|$exit_code"
+    # Try multiple patterns to parse test results
+    # Parse directly from file and use awk to skip ANSI color codes
+    if grep -qE "Tests run:|All tests passed" "$output_file"; then
+        # Pattern: "Passed: X" - extract number after "Passed:" using awk
+        passed=$(grep "Passed:" "$output_file" | tail -1 | awk -F'Passed:' '{print $2}' | grep -oE '[0-9]+' | head -1 || echo "0")
+        
+        # Pattern: "Failed: X" - extract number after "Failed:" using awk
+        failed=$(grep "Failed:" "$output_file" | tail -1 | awk -F'Failed:' '{print $2}' | grep -oE '[0-9]+' | head -1 || echo "0")
+        
+        # If still 0, try alternate patterns
+        if [ "$passed" = "0" ]; then
+            # Try: "X tests passed"
+            passed=$(grep "tests passed" "$output_file" | head -1 | awk '{print $1}' || echo "0")
+        fi
+    elif grep -q "Tests passed:" "$output_file"; then
+        passed=$(grep "Tests passed:" "$output_file" | awk -F'Tests passed:' '{print $2}' | grep -oE '[0-9]+' | head -1 || echo "0")
+        failed=$(grep "Tests failed:" "$output_file" | awk -F'Tests failed:' '{print $2}' | grep -oE '[0-9]+' | head -1 || echo "0")
+    fi
+    
+    # Clean up temp files
+    rm -f "$output_file" "$status_file"
+    
+    printf "%s|%s|%s\n" "$passed" "$failed" "$read_exit_code"
 }
 
 # Get requirement details
@@ -177,6 +269,9 @@ get_requirement_details() {
 
 # Main test runner
 main() {
+    # Set environment variable to prevent recursive calls
+    export RQM_TEST_RUNNER_ACTIVE=1
+    
     print_header
     
     # Validate requirements file
@@ -229,13 +324,19 @@ main() {
             if echo "$tested_files" | grep -q "|$test_file|"; then
                 echo -e "  ${BLUE}ℹ${NC}  Covered by: $test_name (already run)"
             else
-                echo -e "  ${BLUE}▶${NC}  Running: $test_name"
+                # Default timeout of 60 seconds, can be overridden
+                local timeout=60
+                
+                # Run the test with timeout and full output
                 local results
-                results=$(run_test_file "$test_file")
+                results=$(run_test_file "$test_file" "$timeout")
                 IFS='|' read -r passed failed exit_code <<< "$results"
                 tested_files="${tested_files}|${test_file}|"
                 
-                if [[ $exit_code -eq 0 ]]; then
+                if [[ $exit_code -eq 124 ]]; then
+                    echo -e "  ${RED}✗${NC}  Test timed out after ${timeout}s"
+                    ((TOTAL_TESTS_FAILED++)) || true
+                elif [[ $exit_code -eq 0 ]]; then
                     echo -e "  ${GREEN}✓${NC}  Tests passed: $passed"
                     ((TOTAL_TESTS_PASSED += passed)) || true
                 else

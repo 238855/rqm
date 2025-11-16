@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: Test Schema Loading
+    name: TEST-001
+    description: Verifies schema can be loaded
+    justification: Schema loading is critical
+    owner: test@example.com
+    priority: high
+    status: draft

@@ -1,0 +1,27 @@
+version: "1.0"
+requirements:
+  - summary: Start Node
+    name: DEPTH-START
+    description: Tests depth limiting
+    justification: Ensures depth limits prevent unbounded recursion
+    owner: test@example.com
+    requirements:
+      - summary: Nested 1
+        name: NEST-1
+        owner: test@example.com
+        requirements:
+          - summary: Nested 2
+            name: NEST-2
+            owner: test@example.com
+            requirements:
+              - summary: Nested 3
+                name: NEST-3
+                owner: test@example.com
+                requirements:
+                  - summary: Nested 4
+                    name: NEST-4
+                    owner: test@example.com
+                    requirements:
+                      - summary: Nested 5
+                        name: NEST-5
+                        owner: test@example.com

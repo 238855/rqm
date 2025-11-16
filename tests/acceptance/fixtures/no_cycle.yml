@@ -1,0 +1,20 @@
+version: "1.0"
+requirements:
+  - summary: Root Requirement
+    name: ROOT-001
+    description: Has dependencies
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Child One
+      - Child Two
+  - summary: Child One
+    name: CHILD-001
+    description: Leaf node
+    justification: Testing
+    owner: test@example.com
+  - summary: Child Two
+    name: CHILD-002
+    description: Another leaf
+    justification: Testing
+    owner: test@example.com

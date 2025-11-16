@@ -1,0 +1,29 @@
+version: "1.0"
+requirements:
+  - summary: Top
+    name: DIAMOND-TOP
+    description: Two paths to Bottom
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Left
+      - Right
+  - summary: Left
+    name: DIAMOND-LEFT
+    description: Path to Bottom
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Bottom
+  - summary: Right
+    name: DIAMOND-RIGHT
+    description: Another path to Bottom
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Bottom
+  - summary: Bottom
+    name: DIAMOND-BOTTOM
+    description: Reached by two paths
+    justification: Testing
+    owner: test@example.com

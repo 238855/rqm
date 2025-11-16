@@ -1,0 +1,20 @@
+version: "1.0"
+requirements:
+  - summary: Parent Requirement
+    name: PARENT-001
+    description: Has nested requirements
+    justification: Testing nested duplicates
+    owner: test@example.com
+    priority: medium
+    status: draft
+    requirements:
+      - summary: Nested Item
+        name: NEST-001
+        description: First nested
+        justification: Testing
+        owner: test@example.com
+      - summary: Nested Item
+        name: NEST-002
+        description: Duplicate nested
+        justification: Testing
+        owner: test@example.com

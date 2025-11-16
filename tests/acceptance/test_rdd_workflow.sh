@@ -198,12 +198,17 @@ fi
 # Test 9: Requirement coverage reporting
 test_header "Test 9: Test coverage reporting"
 if [ -f "$PROJECT_ROOT/tests/acceptance/run_all_tests.sh" ]; then
-    OUTPUT=$(bash "$PROJECT_ROOT/tests/acceptance/run_all_tests.sh" 2>&1 | tail -20)
-    
-    if echo "$OUTPUT" | grep -iE "coverage|with.*test|without.*test" > /dev/null; then
-        test_passed "Test runner reports requirement coverage"
+    # Skip running the test runner if we're already being run by it (prevent recursion)
+    if [ -n "$RQM_TEST_RUNNER_ACTIVE" ]; then
+        test_passed "Test runner reports requirement coverage (skipped to prevent recursion)"
     else
-        test_passed "Test runner exists (coverage reporting to be enhanced)"
+        OUTPUT=$(bash "$PROJECT_ROOT/tests/acceptance/run_all_tests.sh" 2>&1 | tail -20)
+        
+        if echo "$OUTPUT" | grep -iE "coverage|with.*test|without.*test" > /dev/null; then
+            test_passed "Test runner reports requirement coverage"
+        else
+            test_passed "Test runner exists (coverage reporting to be enhanced)"
+        fi
     fi
 fi
 

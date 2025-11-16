@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: GitHub Owner Test
+    name: OWN-002
+    description: Tests GitHub username as owner
+    justification: Owner validation
+    owner: "@githubuser"
+    priority: medium
+    status: draft

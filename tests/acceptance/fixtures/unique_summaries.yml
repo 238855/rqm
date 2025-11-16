@@ -1,0 +1,23 @@
+version: "1.0"
+requirements:
+  - summary: First Unique Requirement
+    name: UNQ-001
+    description: Unique summary 1
+    justification: Testing uniqueness
+    owner: test@example.com
+    priority: high
+    status: draft
+  - summary: Second Unique Requirement
+    name: UNQ-002
+    description: Unique summary 2
+    justification: Testing uniqueness
+    owner: test@example.com
+    priority: medium
+    status: draft
+  - summary: Third Unique Requirement
+    name: UNQ-003
+    description: Unique summary 3
+    justification: Testing uniqueness
+    owner: test@example.com
+    priority: low
+    status: proposed

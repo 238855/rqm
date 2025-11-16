@@ -54,6 +54,7 @@ requirements:
             owner: claude
             priority: critical
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm001_subrequirements.sh
             tags:
               - rust-core
               - validation
@@ -64,6 +65,7 @@ requirements:
             owner: claude
             priority: critical
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm001_subrequirements.sh
             tags:
               - rust-core
               - validation
@@ -78,6 +80,7 @@ requirements:
             owner: claude
             priority: high
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm001_subrequirements.sh
             tags:
               - rust-core
               - validation
@@ -110,6 +113,7 @@ requirements:
             owner: claude
             priority: critical
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm002_subrequirements.sh
             tags:
               - rust-core
               - graph
@@ -120,6 +124,7 @@ requirements:
             owner: claude
             priority: critical
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm002_subrequirements.sh
             tags:
               - rust-core
               - graph
@@ -130,6 +135,7 @@ requirements:
             owner: claude
             priority: high
             status: implemented
+            acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rqm002_subrequirements.sh
             tags:
               - rust-core
               - graph

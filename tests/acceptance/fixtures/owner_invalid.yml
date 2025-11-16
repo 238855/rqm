@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: Invalid Owner Test
+    name: OWN-004
+    description: Tests invalid owner
+    justification: Owner validation
+    owner: "not-an-email-or-alias"
+    priority: medium
+    status: draft

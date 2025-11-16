@@ -1,0 +1,17 @@
+version: "1.0"
+requirements:
+  - summary: Complete RDD Example
+    name: RDD-EXAMPLE
+    description: This requirement demonstrates the full RDD workflow
+    justification: Users need to see how RDD works end-to-end
+    acceptance_test: |
+      Given I have a requirement
+      When I write an acceptance test
+      Then the test validates the implementation
+    acceptance_test_link: https://github.com/example/tests/test_rdd.sh
+    owner: team@example.com
+    priority: high
+    status: implemented
+    tags:
+      - rdd
+      - example

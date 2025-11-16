@@ -1,0 +1,23 @@
+version: "1.0"
+requirements:
+  - summary: Requirement X
+    name: CYCLE-X
+    description: References Y
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Requirement Y
+  - summary: Requirement Y
+    name: CYCLE-Y
+    description: References Z
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Requirement Z
+  - summary: Requirement Z
+    name: CYCLE-Z
+    description: References X (creates cycle)
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Requirement X

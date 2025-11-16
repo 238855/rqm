@@ -1,0 +1,21 @@
+version: "1.0"
+requirements:
+  - summary: Feature A
+    name: FEAT-A
+    description: Uses Common
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Common Component
+  - summary: Feature B
+    name: FEAT-B
+    description: Also uses Common
+    justification: Testing
+    owner: test@example.com
+    requirements:
+      - Common Component
+  - summary: Common Component
+    name: COMMON
+    description: Shared by multiple features
+    justification: Testing
+    owner: test@example.com

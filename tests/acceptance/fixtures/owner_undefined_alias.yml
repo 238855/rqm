@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - summary: Undefined Alias Test
+    name: OWN-005
+    description: Tests undefined alias
+    justification: Owner validation
+    owner: undefined-alias-not-in-list
+    priority: medium
+    status: draft
