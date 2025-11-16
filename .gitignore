@@ -47,3 +47,7 @@ temp/
 .env
 .env.local
 .env.*.local
+
+# Go binaries
+go-cli/rqm
+go-cli/requim
