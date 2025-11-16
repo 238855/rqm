@@ -40,15 +40,15 @@ Displays requirements in a tree structure by default, showing:
 		}
 
 		// Find the rqm-validator binary
-		validatorPath, err := findValidator()
-		if err != nil {
-			return fmt.Errorf("rqm-validator binary not found: %w", err)
+		validatorPath := findValidatorBinary()
+		if validatorPath == "" {
+			return fmt.Errorf("rqm-validator binary not found")
 		}
 
 		// Call rust-core validator with --format json-full flag
 		validatorCmd := exec.Command(validatorPath, file, "--format", "json-full")
-		output, err := validatorCmd.CombinedOutput()
-		if err != nil {
+		output, _ := validatorCmd.CombinedOutput()
+		if validatorPath == "" {
 			return fmt.Errorf("failed to parse requirements: %s", string(output))
 		}
 

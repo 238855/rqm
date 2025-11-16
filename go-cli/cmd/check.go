@@ -41,14 +41,14 @@ This command uses graph traversal algorithms to detect all cycles.`,
 		}
 
 		// Find the rqm-validator binary
-		validatorPath, err := findValidator()
-		if err != nil {
-			return fmt.Errorf("rqm-validator binary not found: %w", err)
+		validatorPath := findValidatorBinary()
+		if validatorPath == "" {
+			return fmt.Errorf("rqm-validator binary not found")
 		}
 
 		// Call rust-core validator with --check-cycles flag
 		validatorCmd := exec.Command(validatorPath, file, "--check-cycles")
-		output, err := validatorCmd.CombinedOutput()
+		output, _ := validatorCmd.CombinedOutput()
 
 		// Parse the result
 		var result CycleCheckResult
@@ -106,15 +106,15 @@ Useful for understanding the structure and detecting patterns.`,
 		}
 
 		// Find the rqm-validator binary
-		validatorPath, err := findValidator()
-		if err != nil {
-			return fmt.Errorf("rqm-validator binary not found: %w", err)
+		validatorPath := findValidatorBinary()
+		if validatorPath == "" {
+			return fmt.Errorf("rqm-validator binary not found")
 		}
 
 		// Call rust-core validator with --graph flag
 		validatorCmd := exec.Command(validatorPath, file, "--graph")
-		output, err := validatorCmd.CombinedOutput()
-		if err != nil {
+		output, _ := validatorCmd.CombinedOutput()
+		if validatorPath == "" {
 			return fmt.Errorf("failed to generate graph: %s", string(output))
 		}
 
