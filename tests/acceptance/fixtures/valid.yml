@@ -1,0 +1,4 @@
+version: "1.0"
+requirements:
+  - summary: Test Requirement
+    description: A valid test requirement

@@ -32,6 +32,7 @@ module.exports = {
         'deps',
         'examples',
         'schema',
+        'rdd',
       ],
     ],
     'subject-case': [2, 'never', ['upper-case']],

@@ -1,0 +1,230 @@
+version: "1.0"
+
+aliases:
+  - alias: claude
+    name: Claude Code
+    email: ai@anthropic.com
+  - alias: maintainer
+    name: Repository Maintainer
+    github: "238855"
+
+requirements:
+  - summary: RQM System Requirements
+    name: RQM-ROOT
+    description: |
+      RQM must provide a complete requirements management system that enables
+      requirement-driven development workflows.
+    justification: |
+      Requirements-driven development ensures that all code is traceable to
+      business needs and acceptance criteria, improving quality and maintainability.
+    owner: claude
+    priority: critical
+    status: approved
+    requirements:
+      
+      - summary: YAML File Validation
+        name: RQM-001
+        description: |
+          The system must validate YAML requirement files against the JSON schema,
+          ensuring all required fields are present, summaries are unique, and
+          owner references are valid.
+        justification: |
+          Schema validation prevents invalid requirement files from being used
+          and provides clear error messages to users.
+        acceptance_test: |
+          Given a valid YAML file conforming to the schema
+          When I run `rqm validate file.yml`
+          Then the validation succeeds with exit code 0
+          And I see confirmation messages for each validation check
+          
+          Given an invalid YAML file with duplicate summaries
+          When I run `rqm validate file.yml`
+          Then the validation fails with exit code 1
+          And I see a clear error message indicating the duplicate summary
+        acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_validation.sh
+        owner: claude
+        priority: critical
+        status: implemented
+        tags:
+          - validation
+          - mvp
+        requirements:
+          
+          - summary: Schema Loading
+            name: RQM-001.1
+            description: Rust core must embed the JSON schema and compile it at initialization
+            owner: claude
+            priority: critical
+            status: implemented
+            tags:
+              - rust-core
+              - validation
+              
+          - summary: Unique Summary Validation
+            name: RQM-001.2
+            description: Validator must detect and report duplicate summaries across all requirements
+            owner: claude
+            priority: critical
+            status: implemented
+            tags:
+              - rust-core
+              - validation
+              
+          - summary: Owner Reference Validation
+            name: RQM-001.3
+            description: |
+              Validator must verify owner references are either:
+              - Valid email addresses
+              - GitHub usernames (starting with @)
+              - Defined aliases from the top-level configuration
+            owner: claude
+            priority: high
+            status: implemented
+            tags:
+              - rust-core
+              - validation
+      
+      - summary: Circular Reference Detection
+        name: RQM-002
+        description: |
+          The system must detect circular references in requirement graphs
+          and prevent infinite loops during traversal operations.
+        justification: |
+          Requirements may naturally reference each other in cycles (e.g., mutual dependencies).
+          The system must handle this gracefully without crashing or hanging.
+        acceptance_test: |
+          Given a YAML file with circular references (A→B→A)
+          When I build a requirement graph
+          Then the system detects the cycle
+          And traversal operations complete without infinite loops
+          And I can query which requirements form cycles
+        acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_circular_references.sh
+        owner: claude
+        priority: critical
+        status: implemented
+        tags:
+          - graph
+          - mvp
+        requirements:
+          
+          - summary: Cycle Detection Algorithm
+            name: RQM-002.1
+            description: Use petgraph's is_cyclic_directed to detect cycles in requirement graphs
+            owner: claude
+            priority: critical
+            status: implemented
+            tags:
+              - rust-core
+              - graph
+              
+          - summary: Visited Node Tracking
+            name: RQM-002.2
+            description: During traversal, maintain a HashSet of visited nodes to prevent revisiting
+            owner: claude
+            priority: critical
+            status: implemented
+            tags:
+              - rust-core
+              - graph
+              
+          - summary: Maximum Depth Limiting
+            name: RQM-002.3
+            description: Enforce MAX_TRAVERSAL_DEPTH constant to prevent stack overflow
+            owner: claude
+            priority: high
+            status: implemented
+            tags:
+              - rust-core
+              - graph
+      
+      - summary: CLI Validation Command
+        name: RQM-003
+        description: |
+          Provide a `rqm validate <file>` command that validates requirement files
+          and provides user-friendly output.
+        justification: Essential for developer workflow and CI/CD integration
+        acceptance_test: |
+          Given I have a requirements file
+          When I run `rqm validate requirements.yml`
+          Then I see validation results with clear pass/fail indicators
+          And the exit code reflects success (0) or failure (non-zero)
+        acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_cli_validate.sh
+        owner: claude
+        priority: high
+        status: proposed
+        tags:
+          - cli
+          - mvp
+        requirements:
+          
+          - summary: File Existence Check
+            name: RQM-003.1
+            description: Command must verify file exists before attempting validation
+            owner: claude
+            priority: high
+            status: implemented
+            tags:
+              - go-cli
+              
+          - summary: Call Rust Validator
+            name: RQM-003.2
+            description: |
+              Go CLI must invoke the Rust core validator, either via:
+              - Subprocess calling a Rust CLI tool
+              - FFI (future enhancement)
+              - WASM (for web UI)
+            owner: maintainer
+            priority: critical
+            status: proposed
+            tags:
+              - go-cli
+              - integration
+      
+      - summary: Requirement-Driven Development Support
+        name: RQM-004
+        description: |
+          RQM must support requirement-driven development by allowing requirements
+          to link to acceptance tests and enabling traceability.
+        justification: |
+          This is the core value proposition - enabling teams to practice
+          requirement-driven development.
+        acceptance_test: |
+          Given a requirement with an acceptance_test_link field
+          When I query the requirement
+          Then I can see the link to the automated test
+          And I can trace code changes back to requirements
+        acceptance_test_link: https://github.com/238855/rqm/blob/main/tests/acceptance/test_rdd_workflow.sh
+        owner: maintainer
+        priority: critical
+        status: draft
+        tags:
+          - workflow
+          - mvp
+        requirements:
+          
+          - summary: Acceptance Test Links
+            name: RQM-004.1
+            description: Schema must support acceptance_test_link field for URLs
+            owner: claude
+            priority: high
+            status: implemented
+            tags:
+              - schema
+              
+          - summary: Test Execution Integration
+            name: RQM-004.2
+            description: |
+              CLI should provide commands to:
+              - List all requirements with acceptance tests
+              - Run acceptance tests for a specific requirement
+              - Generate test reports showing requirement coverage
+            owner: maintainer
+            priority: medium
+            status: draft
+            tags:
+              - cli
+              - testing
+
+further_information:
+  - https://github.com/238855/rqm
+  - "This file demonstrates self-hosting: RQM managing its own requirements"

@@ -1,0 +1,6 @@
+version: "1.0"
+requirements:
+  - summary: Duplicate
+    description: First one
+  - summary: Duplicate
+    description: Second one with same summary

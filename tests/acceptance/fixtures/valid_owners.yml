@@ -1,0 +1,11 @@
+version: "1.0"
+aliases:
+  - alias: bob
+    email: bob@example.com
+requirements:
+  - summary: Email Owner
+    owner: alice@example.com
+  - summary: GitHub Owner
+    owner: "@githubuser"
+  - summary: Alias Owner
+    owner: bob

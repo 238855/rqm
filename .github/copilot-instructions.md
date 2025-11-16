@@ -106,6 +106,41 @@ rqm/
 └── examples/           # Sample requirement files
 ```
 
+## Requirement-Driven Development (RDD)
+
+**RQM uses itself to manage its own requirements!**
+
+### RDD Workflow
+1. **Define Requirement** in `.rqm/requirements.yml`
+2. **Write Acceptance Test** in `tests/acceptance/test_*.sh`
+3. **Run Test** (expect failure initially)
+4. **Implement Code** to satisfy acceptance criteria
+5. **Add Sub-Requirements** as you break down the work
+6. **Iterate** until parent requirement's test passes
+
+### Before Implementing Features
+- Check `.rqm/requirements.yml` for the requirement
+- Verify acceptance test exists
+- Understand acceptance criteria (Given/When/Then)
+- Run acceptance test to see current status
+
+### During Implementation
+- Reference requirement ID in commits (e.g., "RQM-001")
+- Update requirement status (draft → proposed → approved → implemented)
+- Add sub-requirements for technical details
+- Run acceptance tests frequently
+
+### Commit Format for Requirements
+```
+feat(component): implement REQ-ID requirement name
+
+Satisfies RQM-XXX acceptance criteria:
+- ✓ Criterion 1
+- ✓ Criterion 2
+
+Acceptance test: tests/acceptance/test_feature.sh
+```
+
 ## AI Assistant Best Practices
 
 - When generating code, respect the language-specific conventions above
@@ -115,6 +150,7 @@ rqm/
 - Use semantic versioning principles for breaking changes
 - Reference the schema when working with YAML structures
 - Consider cross-component impacts (Rust changes may affect Go CLI and Web UI)
+- **Follow RDD workflow**: Check requirements before coding, update status after
 
 ## Quality Assurance Requirements
 
