@@ -5,7 +5,7 @@ aliases:
     name: Alice Developer
     email: alice@example.com
     github: alicedev
-    
+
   - alias: bob
     name: Bob Engineer
     email: bob@example.com
@@ -44,7 +44,7 @@ requirements:
         tags:
           - security
           - cryptography
-          
+
       - summary: OAuth2 Integration
         name: AUTH-001.2
         description: Support OAuth2 authentication for Google, GitHub, and Microsoft
@@ -54,7 +54,7 @@ requirements:
         tags:
           - oauth
           - integration
-          
+
       - summary: Multi-Factor Authentication
         name: AUTH-001.3
         description: Optional MFA using TOTP (Time-based One-Time Password)
@@ -67,7 +67,7 @@ requirements:
         further_information:
           - https://datatracker.ietf.org/doc/html/rfc6238
           - "Consider supporting WebAuthn in future versions"
-          
+
   - summary: Data Encryption
     name: SEC-001
     description: All sensitive data must be encrypted at rest and in transit
@@ -85,13 +85,13 @@ requirements:
         owner: bob
         priority: critical
         status: implemented
-        
+
       - summary: Database Encryption
         description: Sensitive database fields encrypted using AES-256
         owner: alice
         priority: high
         status: approved
-        
+
   - summary: API Rate Limiting
     name: API-001
     description: Implement rate limiting to prevent abuse and ensure fair usage
@@ -104,7 +104,7 @@ requirements:
       - security
     further_information:
       - https://datatracker.ietf.org/doc/html/rfc6585
-      
+
   - summary: Audit Logging
     name: AUD-001
     description: All security-relevant events must be logged with sufficient detail
@@ -117,4 +117,4 @@ requirements:
       - compliance
       - logging
     requirements:
-      - Password Hashing  # Reference to existing requirement by summary
+      - Password Hashing # Reference to existing requirement by summary

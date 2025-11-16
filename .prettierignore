@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+go-cli/vendor/
+rust-core/target/
+
+# Build outputs
+dist/
+build/
+*.wasm
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Generated files
+go-cli/rqm
+go-cli/requim
+rust-core/target/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Metadata (can be regenerated)
+.rqm/.metadata/
+
+# Lock files formatting can be inconsistent
+package-lock.json
+Cargo.lock
+go.sum

@@ -28,6 +28,7 @@ Validation   Structures    Detection
 ### Component Responsibilities
 
 **Rust Core (`rust-core/`)**
+
 - YAML parsing and deserialization
 - Schema validation using JSON Schema
 - Graph construction and cycle detection
@@ -35,12 +36,14 @@ Validation   Structures    Detection
 - Provides C FFI for Go integration (future)
 
 **Go CLI (`go-cli/`)**
+
 - User-facing command-line interface
 - File system operations
 - Output formatting (JSON, table, tree)
 - Integration with Rust core (initially via process spawning)
 
 **Web UI (`web-ui/`)**
+
 - Interactive graph visualization
 - Requirement browsing and search
 - Visual cycle detection warnings
@@ -58,6 +61,7 @@ The system MUST handle circular references without infinite loops. Implementatio
 4. **Visual Indicators**: UI shows cycle warnings without breaking
 
 Example pattern:
+
 ```rust
 fn traverse(req: &Requirement, visited: &mut HashSet<String>, depth: usize) -> Result<()> {
     if visited.contains(&req.summary) || depth > MAX_DEPTH {
@@ -75,6 +79,7 @@ fn traverse(req: &Requirement, visited: &mut HashSet<String>, depth: usize) -> R
 ### Schema Design
 
 The JSON Schema must support:
+
 - Inline requirement definitions
 - Reference-based requirements (just a summary string)
 - Top-level alias definitions
@@ -91,6 +96,7 @@ The JSON Schema must support:
 ### Adding a New Field to Requirements
 
 1. Update `docs/schema.json`:
+
 ```json
 {
   "properties": {
@@ -103,6 +109,7 @@ The JSON Schema must support:
 ```
 
 2. Update Rust struct:
+
 ```rust
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Requirement {
@@ -113,6 +120,7 @@ pub struct Requirement {
 ```
 
 3. Update Go struct:
+
 ```go
 type Requirement struct {
     // existing fields...
@@ -121,16 +129,18 @@ type Requirement struct {
 ```
 
 4. Update TypeScript interface:
+
 ```typescript
 interface Requirement {
-    // existing fields...
-    newField?: string;
+  // existing fields...
+  newField?: string;
 }
 ```
 
 ### Testing Circular References
 
 Always include tests for:
+
 - Simple cycle (A → B → A)
 - Complex cycle (A → B → C → A)
 - Self-reference (A → A)
@@ -165,12 +175,15 @@ Future approach: REST API served by Go CLI
 ## Documentation Standards
 
 ### Code Documentation
+
 - Rust: Use `///` for public items, `//!` for modules
 - Go: Use `//` comments above declarations
 - TypeScript: Use JSDoc `/** */` for exported items
 
 ### File Headers
+
 All source files should include:
+
 ```
 // RQM - Requirements Management in Code
 // Copyright (c) 2025
@@ -180,6 +193,7 @@ All source files should include:
 ## Development Workflow
 
 ### Before Committing
+
 1. Run language-specific formatters
 2. Run linters (clippy, golangci-lint, eslint)
 3. Run all tests
@@ -187,6 +201,7 @@ All source files should include:
 5. Check that examples still work
 
 ### Version Bumping
+
 - Use semantic versioning
 - Update version in: Cargo.toml, go.mod, package.json, README.md
 - Create git tag matching version
@@ -194,23 +209,27 @@ All source files should include:
 ## AI Agent Specific Guidance
 
 ### When Writing Code
+
 - Respect existing patterns in the codebase
 - Add tests for new functionality
 - Consider edge cases (empty files, malformed YAML, cycles)
 - Update documentation inline with code changes
 
 ### When Debugging
+
 - Check schema validation first
 - Verify file paths are correct
 - Look for cycle detection issues
 - Check error propagation chain
 
 ### When Refactoring
+
 - Ensure backward compatibility for YAML format
 - Update all three components if changing shared concepts
 - Add migration guide if breaking changes necessary
 
 ### When Optimizing
+
 - Profile before optimizing
 - Document performance characteristics
 - Add benchmarks for critical paths
@@ -218,6 +237,7 @@ All source files should include:
 ## Quick Reference
 
 ### Build Commands
+
 ```bash
 # Rust
 cd rust-core && cargo build --release
@@ -230,6 +250,7 @@ cd web-ui && npm run build
 ```
 
 ### Test Commands
+
 ```bash
 # Rust
 cd rust-core && cargo test
@@ -242,6 +263,7 @@ cd web-ui && npm test
 ```
 
 ### Format Commands
+
 ```bash
 # Rust
 cd rust-core && cargo fmt
@@ -262,4 +284,4 @@ cd web-ui && npm run format
 
 ---
 
-*This is a living document. Update as the project evolves.*
+_This is a living document. Update as the project evolves._

@@ -11,6 +11,7 @@ RQM (Requirements Management) is a polyglot monorepo for managing requirements a
 ## Code Style & Conventions
 
 ### Rust (rust-core/)
+
 - Follow Rust 2021 edition idioms
 - Use `cargo fmt` and `cargo clippy` before committing
 - Prefer `Result<T, E>` for error handling
@@ -20,6 +21,7 @@ RQM (Requirements Management) is a polyglot monorepo for managing requirements a
 - Use `thiserror` for custom error types
 
 ### Go (go-cli/)
+
 - Follow standard Go formatting (`gofmt`)
 - Use `cobra` for CLI structure
 - Prefer table-driven tests
@@ -29,6 +31,7 @@ RQM (Requirements Management) is a polyglot monorepo for managing requirements a
 - Use structured logging where appropriate
 
 ### TypeScript/React (web-ui/)
+
 - Use functional components with hooks
 - Follow React best practices and hooks rules
 - Use TypeScript strict mode
@@ -40,19 +43,23 @@ RQM (Requirements Management) is a polyglot monorepo for managing requirements a
 ## Key Architectural Decisions
 
 ### Circular Reference Handling
+
 When working with requirement graphs:
+
 - Always track visited nodes during traversal
 - Implement depth limits for recursive operations
 - Use reference IDs rather than deep cloning
 - Test circular reference scenarios explicitly
 
 ### YAML Schema
+
 - All YAML files must validate against the JSON Schema in `docs/schema.json`
 - Summaries must be unique within a file
 - Owner references can be email, GitHub username, or alias
 - Aliases are defined at the top-level configuration
 
 ### Monorepo Management
+
 - Each subproject has its own build/test configuration
 - Shared types/interfaces should be documented
 - Version numbers should stay synchronized across components
@@ -67,6 +74,7 @@ When working with requirement graphs:
 ## Common Tasks
 
 ### Adding a New Requirement Field
+
 1. Update the JSON Schema in `docs/schema.json`
 2. Update Rust types in `rust-core/src/types.rs`
 3. Update Go types if needed for CLI display
@@ -75,6 +83,7 @@ When working with requirement graphs:
 6. Update documentation
 
 ### Adding a New CLI Command
+
 1. Create command in `go-cli/cmd/`
 2. Wire it up in the root command
 3. Add tests in `*_test.go`
@@ -111,6 +120,7 @@ rqm/
 **RQM uses itself to manage its own requirements!**
 
 ### RDD Workflow
+
 1. **Define Requirement** in `.rqm/requirements.yml`
 2. **Write Acceptance Test** in `tests/acceptance/test_*.sh`
 3. **Run Test** (expect failure initially)
@@ -119,18 +129,21 @@ rqm/
 6. **Iterate** until parent requirement's test passes
 
 ### Before Implementing Features
+
 - Check `.rqm/requirements.yml` for the requirement
 - Verify acceptance test exists
 - Understand acceptance criteria (Given/When/Then)
 - Run acceptance test to see current status
 
 ### During Implementation
+
 - Reference requirement ID in commits (e.g., "RQM-001")
 - Update requirement status (draft → proposed → approved → implemented)
 - Add sub-requirements for technical details
 - Run acceptance tests frequently
 
 ### Commit Format for Requirements
+
 ```
 feat(component): implement REQ-ID requirement name
 
@@ -155,6 +168,7 @@ Acceptance test: tests/acceptance/test_feature.sh
 ## Quality Assurance Requirements
 
 ### Testing
+
 - **ALWAYS** write unit tests for new code
 - Run tests before committing: `cargo test`, `go test ./...`, `npm test`
 - Aim for high test coverage on critical paths
@@ -162,6 +176,7 @@ Acceptance test: tests/acceptance/test_feature.sh
 - Use table-driven tests in Go for multiple test cases
 
 ### Linting and Formatting
+
 - **Rust**: Run `cargo fmt` and `cargo clippy` before every commit
 - **Go**: Run `gofmt` and `golangci-lint run` before every commit
 - **TypeScript**: Run `npm run lint` and `npm run format` before every commit
@@ -169,6 +184,7 @@ Acceptance test: tests/acceptance/test_feature.sh
 - Configure pre-commit hooks to enforce formatting
 
 ### Commit Standards
+
 - Use **conventional commits** format: `type(scope): description`
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
   - Examples: `feat(parser): add YAML parsing support`, `fix(graph): handle circular references`
@@ -178,6 +194,7 @@ Acceptance test: tests/acceptance/test_feature.sh
 - Write descriptive commit messages
 
 ### Release Management
+
 - **DO NOT** create git tags or publish releases automatically
 - Versions are managed manually by the maintainer
 - CI/CD builds and tests but does not publish
@@ -186,18 +203,21 @@ Acceptance test: tests/acceptance/test_feature.sh
 ## Dependencies to Prefer
 
 ### Rust
+
 - `serde`, `serde_yaml` - YAML handling
 - `thiserror` - Error types
 - `petgraph` - Graph algorithms
 - `jsonschema` - Schema validation
 
 ### Go
+
 - `cobra` - CLI framework
 - `viper` - Configuration
 - `logrus` or `zap` - Logging
 - `testify` - Testing assertions
 
 ### TypeScript/React
+
 - `react-flow` or `vis-network` - Graph visualization
 - `react-query` - Data fetching
 - `zod` - Runtime validation

@@ -5,11 +5,20 @@
 package cmd
 
 import (
+    "encoding/json"
     "fmt"
     "os"
+    "os/exec"
+    "path/filepath"
 
     "github.com/spf13/cobra"
 )
+
+type ValidationResult struct {
+    Valid    bool     `json:"valid"`
+    Errors   []string `json:"errors"`
+    Warnings []string `json:"warnings"`
+}
 
 var validateCmd = &cobra.Command{
     Use:   "validate [file]",
@@ -31,16 +40,73 @@ This command checks:
             return fmt.Errorf("file does not exist: %s", file)
         }
         
-        // TODO: Call rust-core validator
-        fmt.Printf("Validating %s...\n", file)
-        fmt.Println("✓ YAML syntax valid")
-        fmt.Println("✓ Schema validation passed")
-        fmt.Println("✓ All summaries unique")
-        fmt.Println("✓ Owner references valid")
-        fmt.Println("\nValidation successful!")
+        // Find the rqm-validator binary
+        validatorPath, err := findValidator()
+        if err != nil {
+            return fmt.Errorf("rqm-validator binary not found: %w\nPlease run: cd rust-core && cargo build --release --bin rqm-validator", err)
+        }
         
-        return nil
+        // Call rust-core validator
+        fmt.Printf("Validating %s...\n", file)
+        
+        validatorCmd := exec.Command(validatorPath, file)
+        output, err := validatorCmd.CombinedOutput()
+        
+        // Parse JSON output
+        var result ValidationResult
+        if jsonErr := json.Unmarshal(output, &result); jsonErr != nil {
+            return fmt.Errorf("failed to parse validator output: %w\nOutput: %s", jsonErr, string(output))
+        }
+        
+        // Display results
+        if result.Valid {
+            fmt.Println("✓ YAML syntax valid")
+            fmt.Println("✓ Schema validation passed")
+            fmt.Println("✓ All summaries unique")
+            fmt.Println("✓ Owner references valid")
+            fmt.Println("\nValidation successful!")
+            return nil
+        }
+        
+        // Display errors
+        fmt.Println("\n✗ Validation failed:")
+        for _, errMsg := range result.Errors {
+            fmt.Printf("  - %s\n", errMsg)
+        }
+        
+        // Display warnings if any
+        if len(result.Warnings) > 0 {
+            fmt.Println("\nWarnings:")
+            for _, warning := range result.Warnings {
+                fmt.Printf("  ⚠ %s\n", warning)
+            }
+        }
+        
+        return fmt.Errorf("validation failed with %d error(s)", len(result.Errors))
     },
+}
+
+// findValidator locates the rqm-validator binary
+func findValidator() (string, error) {
+    // Try relative path from go-cli directory
+    paths := []string{
+        "../rust-core/target/release/rqm-validator",
+        "../rust-core/target/debug/rqm-validator",
+        "rust-core/target/release/rqm-validator",
+        "rust-core/target/debug/rqm-validator",
+    }
+    
+    for _, path := range paths {
+        absPath, err := filepath.Abs(path)
+        if err != nil {
+            continue
+        }
+        if _, err := os.Stat(absPath); err == nil {
+            return absPath, nil
+        }
+    }
+    
+    return "", fmt.Errorf("rqm-validator binary not found in expected locations")
 }
 
 func init() {

@@ -67,6 +67,7 @@ Create `tests/acceptance/test_feature.sh`:
 ### 4. Implement Code
 
 Write the minimum code to pass the acceptance test:
+
 - Update Rust core
 - Add CLI commands
 - Update UI components
@@ -93,6 +94,7 @@ Repeat for each sub-requirement until the parent requirement's acceptance test p
 See `.rqm/requirements.yml` for RQM's own requirements.
 
 Key requirements:
+
 - **RQM-001**: YAML File Validation
 - **RQM-002**: Circular Reference Detection
 - **RQM-003**: CLI Validation Command
@@ -111,10 +113,12 @@ find tests/acceptance -name 'test_*.sh' -exec {} \;
 ## Test Status
 
 Acceptance tests show current implementation status:
+
 - ✓ PASS = Requirement satisfied
 - ✗ FAIL = Work needed
 
 Example output:
+
 ```
 RQM-001: YAML File Validation
 ✓ PASS: Valid YAML file passes validation
@@ -132,18 +136,21 @@ RQM-001: YAML File Validation
 ## Integration with Development
 
 ### Before Coding
+
 1. Review `.rqm/requirements.yml`
 2. Identify next requirement to implement
 3. Check acceptance test exists
 4. Understand acceptance criteria
 
 ### During Coding
+
 1. Run acceptance test frequently
 2. Add sub-requirements as needed
 3. Update requirement status
 4. Keep tests passing
 
 ### After Coding
+
 1. Ensure acceptance test passes
 2. Update requirement status to `implemented`
 3. Commit with reference to requirement ID
@@ -165,10 +172,11 @@ Acceptance test: tests/acceptance/test_validation.sh
 ## RQM Self-Hosting
 
 RQM uses itself to manage its own requirements, demonstrating:
+
 - The system works for real projects
 - Requirements can be complex (nested, circular references)
 - The workflow is practical for daily development
 
 ---
 
-*This workflow is itself a requirement: RQM-004*
+_This workflow is itself a requirement: RQM-004_

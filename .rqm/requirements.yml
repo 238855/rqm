@@ -21,7 +21,6 @@ requirements:
     priority: critical
     status: approved
     requirements:
-      
       - summary: YAML File Validation
         name: RQM-001
         description: |
@@ -36,7 +35,7 @@ requirements:
           When I run `rqm validate file.yml`
           Then the validation succeeds with exit code 0
           And I see confirmation messages for each validation check
-          
+
           Given an invalid YAML file with duplicate summaries
           When I run `rqm validate file.yml`
           Then the validation fails with exit code 1
@@ -49,7 +48,6 @@ requirements:
           - validation
           - mvp
         requirements:
-          
           - summary: Schema Loading
             name: RQM-001.1
             description: Rust core must embed the JSON schema and compile it at initialization
@@ -59,7 +57,7 @@ requirements:
             tags:
               - rust-core
               - validation
-              
+
           - summary: Unique Summary Validation
             name: RQM-001.2
             description: Validator must detect and report duplicate summaries across all requirements
@@ -69,7 +67,7 @@ requirements:
             tags:
               - rust-core
               - validation
-              
+
           - summary: Owner Reference Validation
             name: RQM-001.3
             description: |
@@ -83,7 +81,7 @@ requirements:
             tags:
               - rust-core
               - validation
-      
+
       - summary: Circular Reference Detection
         name: RQM-002
         description: |
@@ -106,7 +104,6 @@ requirements:
           - graph
           - mvp
         requirements:
-          
           - summary: Cycle Detection Algorithm
             name: RQM-002.1
             description: Use petgraph's is_cyclic_directed to detect cycles in requirement graphs
@@ -116,7 +113,7 @@ requirements:
             tags:
               - rust-core
               - graph
-              
+
           - summary: Visited Node Tracking
             name: RQM-002.2
             description: During traversal, maintain a HashSet of visited nodes to prevent revisiting
@@ -126,7 +123,7 @@ requirements:
             tags:
               - rust-core
               - graph
-              
+
           - summary: Maximum Depth Limiting
             name: RQM-002.3
             description: Enforce MAX_TRAVERSAL_DEPTH constant to prevent stack overflow
@@ -136,7 +133,7 @@ requirements:
             tags:
               - rust-core
               - graph
-      
+
       - summary: CLI Validation Command
         name: RQM-003
         description: |
@@ -156,7 +153,6 @@ requirements:
           - cli
           - mvp
         requirements:
-          
           - summary: File Existence Check
             name: RQM-003.1
             description: Command must verify file exists before attempting validation
@@ -165,7 +161,7 @@ requirements:
             status: implemented
             tags:
               - go-cli
-              
+
           - summary: Call Rust Validator
             name: RQM-003.2
             description: |
@@ -179,7 +175,7 @@ requirements:
             tags:
               - go-cli
               - integration
-      
+
       - summary: Requirement-Driven Development Support
         name: RQM-004
         description: |
@@ -201,7 +197,6 @@ requirements:
           - workflow
           - mvp
         requirements:
-          
           - summary: Acceptance Test Links
             name: RQM-004.1
             description: Schema must support acceptance_test_link field for URLs
@@ -210,7 +205,7 @@ requirements:
             status: implemented
             tags:
               - schema
-              
+
           - summary: Test Execution Integration
             name: RQM-004.2
             description: |
@@ -244,7 +239,7 @@ further_information:
         - User never sees or manages IDs/UUIDs manually
         - Changes to summary update metadata, preserve UUID
     dependencies: []
-    sub_requirements:
+    requirements:
       - summary: Add project configuration for ID prefix
         id: RQM-005.1
         status: proposed
@@ -327,7 +322,7 @@ further_information:
         - Preserves all metadata fields
         - Roundtrip serialization maintains data integrity
     dependencies: []
-    sub_requirements:
+    requirements:
       - summary: Define core Requirement type with all fields
         id: RQM-006.1
         status: implemented
@@ -383,7 +378,7 @@ further_information:
         - Prevents infinite loops in traversal
         - Returns error on circular reference
     dependencies: ["RQM-006"]
-    sub_requirements:
+    requirements:
       - summary: Build directed graph from requirements
         id: RQM-007.1
         status: implemented
@@ -438,7 +433,7 @@ further_information:
         - Reports detailed validation errors
         - Supports oneOf for owner reference types
     dependencies: ["RQM-006"]
-    sub_requirements:
+    requirements:
       - summary: Create comprehensive JSON Schema definition
         id: RQM-008.1
         status: implemented
@@ -481,7 +476,7 @@ further_information:
         - Validates dependency references exist
         - Checks for circular dependencies
     dependencies: ["RQM-008"]
-    sub_requirements:
+    requirements:
       - summary: Duplicate summary detection
         id: RQM-009.1
         status: implemented
@@ -534,7 +529,7 @@ further_information:
         - Tests cover happy path and error cases
         - Uses tempfile for filesystem tests
     dependencies: []
-    sub_requirements:
+    requirements:
       - summary: Graph module tests
         id: RQM-010.1
         status: implemented

@@ -115,17 +115,8 @@
           "type": "array",
           "description": "Additional documentation, links, or notes",
           "items": {
-            "oneOf": [
-              {
-                "type": "string",
-                "format": "uri",
-                "description": "URL to external resource"
-              },
-              {
-                "type": "string",
-                "description": "Textual information"
-              }
-            ]
+            "type": "string",
+            "description": "URL to external resource or textual information"
           }
         },
         "tags": {

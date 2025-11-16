@@ -10,6 +10,7 @@
 ## 🎯 Overview
 
 RQM enables teams to:
+
 - **Define requirements as code** using YAML files with full validation
 - **Build requirement trees** with support for complex relationships including circular references
 - **Track ownership and accountability** with flexible person references
@@ -44,6 +45,7 @@ Each requirement can have:
 ### Circular Reference Handling
 
 The system intelligently handles circular references to prevent infinite loops during traversal, using:
+
 - Visited node tracking during graph traversal
 - Depth limiting for nested expansions
 - Reference counting and cycle detection

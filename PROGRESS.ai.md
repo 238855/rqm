@@ -5,6 +5,7 @@
 ## ✅ Completed
 
 ### Infrastructure & Setup
+
 - [x] GitHub repository created at github.com/238855/rqm
 - [x] Monorepo structure established
 - [x] Comprehensive .gitignore for Rust, Go, and Node
@@ -12,12 +13,14 @@
 - [x] AI development guides (copilot-instructions.md, agents.md)
 
 ### Documentation
+
 - [x] Main README with project overview and credits to Claude Code
 - [x] JSON Schema for YAML validation (docs/schema.json)
 - [x] Example requirements file (examples/sample-requirements.yml)
 - [x] Go CLI README
 
 ### Rust Core Library (rust-core/) - v0.1.0
+
 - [x] Complete type system for requirements
   - RequirementConfig, Requirement, PersonAlias
   - Owner references (email, GitHub, alias)
@@ -35,6 +38,7 @@
 - [x] Formatted with cargo fmt
 
 ### Go CLI (go-cli/) - v0.1.0
+
 - [x] Cobra framework integration
 - [x] Viper for configuration
 - [x] Root command with version info
@@ -43,6 +47,7 @@
 - [x] Configuration file support (~/.rqm.yaml)
 
 ### Commits
+
 - **2 commits** made with conventional commit format
 - All tests passing before each commit
 - Code formatted and linted
@@ -50,23 +55,27 @@
 ## 🚧 In Progress / Next Steps
 
 ### TypeScript CLI (ts-cli/)
+
 - [ ] Initialize with TypeScript
 - [ ] Use commander.js or clack for CLI framework
 - [ ] Integrate with Rust core (via subprocess or WASM)
 
 ### React Web UI (web-ui/)
+
 - [ ] Initialize with Vite or Next.js
 - [ ] TypeScript strict mode
 - [ ] Graph visualization component
 - [ ] Requirement browser
 
 ### CI/CD
+
 - [ ] GitHub Actions workflow for testing
 - [ ] Build automation for all three components
 - [ ] Multi-platform binaries (Linux, macOS, Windows)
 - [ ] **Note**: No automatic versioning/publishing (manual only)
 
 ### Integration
+
 - [ ] Wire Go CLI to actually call Rust library
 - [ ] FFI bindings or CLI subprocess approach
 - [ ] WASM compilation for web usage
@@ -76,7 +85,7 @@
 - **Total Lines of Code**: ~1,500+
 - **Test Coverage**: 19 unit tests (Rust)
 - **Languages**: Rust, Go, TypeScript, YAML, JSON
-- **Dependencies**: 
+- **Dependencies**:
   - Rust: serde, petgraph, jsonschema, thiserror
   - Go: cobra, viper
 
@@ -101,4 +110,4 @@ https://github.com/238855/rqm
 
 ---
 
-*This document tracks development progress and is AI-generated.*
+_This document tracks development progress and is AI-generated._

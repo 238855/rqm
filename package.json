@@ -18,16 +18,19 @@
     "test": "npm run test:rust",
     "test:rust": "cd rust-core && cargo test",
     "test:go": "test -d go-cli/go.mod && cd go-cli && go test ./... || echo 'Go CLI not yet initialized'",
-    "lint": "npm run lint:rust",
+    "lint": "npm run lint:rust && npm run lint:prettier",
     "lint:rust": "cd rust-core && cargo clippy -- -D warnings",
     "lint:go": "test -d go-cli/go.mod && cd go-cli && golangci-lint run || echo 'Go CLI not yet initialized'",
-    "format": "npm run format:rust",
+    "lint:prettier": "prettier --check .",
+    "format": "npm run format:rust && npm run format:prettier",
     "format:rust": "cd rust-core && cargo fmt",
-    "format:go": "test -d go-cli/go.mod && cd go-cli && gofmt -w . || echo 'Go CLI not yet initialized'"
+    "format:go": "test -d go-cli/go.mod && cd go-cli && gofmt -w . || echo 'Go CLI not yet initialized'",
+    "format:prettier": "prettier --write ."
   },
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
-    "husky": "^9.0.0"
+    "husky": "^9.0.0",
+    "prettier": "^3.6.2"
   }
 }
