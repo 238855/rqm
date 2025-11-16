@@ -1,0 +1,225 @@
+# RQM CI/CD Pipeline
+# Runs tests, linting, and builds for all components
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  CARGO_TERM_COLOR: always
+  GO_VERSION: "1.21"
+  RUST_VERSION: "1.70"
+  NODE_VERSION: "20"
+
+jobs:
+  # Rust Core Library
+  rust-core:
+    name: Rust Core - Test & Lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: ./rust-core
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: rust-core/target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+      - name: Run clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Run tests
+        run: cargo test --verbose
+
+      - name: Build release binary
+        run: cargo build --release --bin rqm-validator
+
+      - name: Upload validator binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: rqm-validator-${{ matrix.os }}
+          path: |
+            rust-core/target/release/rqm-validator${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+
+  # Go CLI
+  go-cli:
+    name: Go CLI - Test & Lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    needs: rust-core
+    defaults:
+      run:
+        working-directory: ./go-cli
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: go-cli/go.sum
+
+      - name: Download Rust validator
+        uses: actions/download-artifact@v4
+        with:
+          name: rqm-validator-${{ matrix.os }}
+          path: rust-core/target/release/
+
+      - name: Make validator executable (Unix)
+        if: runner.os != 'Windows'
+        run: chmod +x ../rust-core/target/release/rqm-validator
+
+      - name: Check formatting
+        run: |
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "Go files are not formatted:"
+            gofmt -s -l .
+            exit 1
+          fi
+        shell: bash
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Build CLI
+        run: |
+          go build -o rqm${{ matrix.os == 'windows-latest' && '.exe' || '' }} .
+          go build -o requim${{ matrix.os == 'windows-latest' && '.exe' || '' }} .
+
+      - name: Upload CLI binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: rqm-cli-${{ matrix.os }}
+          path: |
+            go-cli/rqm${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+            go-cli/requim${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+
+  # Web UI
+  web-ui:
+    name: Web UI - Test & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web-ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: web-ui/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run type check
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-ui-dist
+          path: web-ui/dist/
+
+  # Code Formatting Check (Prettier)
+  formatting:
+    name: Check Code Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Prettier formatting
+        run: npm run lint:prettier
+
+  # Acceptance Tests
+  acceptance-tests:
+    name: Acceptance Tests
+    runs-on: ubuntu-latest
+    needs: [rust-core, go-cli]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Download Rust validator
+        uses: actions/download-artifact@v4
+        with:
+          name: rqm-validator-ubuntu-latest
+          path: rust-core/target/release/
+
+      - name: Make validator executable
+        run: chmod +x rust-core/target/release/rqm-validator
+
+      - name: Download Go CLI
+        uses: actions/download-artifact@v4
+        with:
+          name: rqm-cli-ubuntu-latest
+          path: go-cli/
+
+      - name: Make CLI executable
+        run: chmod +x go-cli/rqm go-cli/requim
+
+      - name: Run acceptance tests
+        run: |
+          cd tests/acceptance
+          bash run_all_tests.sh
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-test-results
+          path: tests/acceptance/*.log
