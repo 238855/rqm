@@ -434,7 +434,7 @@ requirements:
           given: Requirements YAML file
           when: Validating against JSON schema
           then: |
-            - Compiles JSON Schema from docs/schema.json
+            - Compiles JSON Schema from schema.json
             - Validates YAML structure matches schema
             - Reports detailed validation errors
             - Supports oneOf for owner reference types

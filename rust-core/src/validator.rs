@@ -15,7 +15,7 @@ pub struct Validator {
 impl Validator {
     /// Create a new validator with the embedded schema
     pub fn new() -> Result<Self> {
-        let schema_json = include_str!("../../docs/schema.json");
+        let schema_json = include_str!("../../schema.json");
         let schema: Value = serde_json::from_str(schema_json)
             .map_err(|e| Error::custom(format!("Failed to parse schema: {}", e)))?;
 

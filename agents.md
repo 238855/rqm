@@ -95,7 +95,7 @@ The JSON Schema must support:
 
 ### Adding a New Field to Requirements
 
-1. Update `docs/schema.json`:
+1. Update `schema.json`:
 
 ```json
 {

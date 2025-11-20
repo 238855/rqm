@@ -67,9 +67,9 @@ test_header "RQM-001.1: Schema Loading"
 
 # Test 1: Schema file exists and is loadable
 test_header "Test 1: JSON Schema file exists"
-SCHEMA_PATH="$PROJECT_ROOT/docs/schema.json"
+SCHEMA_PATH="$PROJECT_ROOT/schema.json"
 if [ -f "$SCHEMA_PATH" ]; then
-    test_passed "Schema file exists at docs/schema.json"
+    test_passed "Schema file exists at schema.json"
 else
     test_failed "Schema file not found" "Expected at $SCHEMA_PATH"
 fi

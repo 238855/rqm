@@ -53,7 +53,7 @@ When working with requirement graphs:
 
 ### YAML Schema
 
-- All YAML files must validate against the JSON Schema in `docs/schema.json`
+- All YAML files must validate against the JSON Schema in `schema.json`
 - Summaries must be unique within a file
 - Owner references can be email, GitHub username, or alias
 - Aliases are defined at the top-level configuration
@@ -75,7 +75,7 @@ When working with requirement graphs:
 
 ### Adding a New Requirement Field
 
-1. Update the JSON Schema in `docs/schema.json`
+1. Update the JSON Schema in `schema.json`
 2. Update Rust types in `rust-core/src/types.rs`
 3. Update Go types if needed for CLI display
 4. Update TypeScript interfaces in `web-ui/src/types/`

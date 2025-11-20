@@ -14,7 +14,9 @@ go-cli/dist/
 
 # Node
 node_modules/
-dist/
+./dist/
+!bin/dist/
+!bin/dist/**
 build/
 *.log
 npm-debug.log*
