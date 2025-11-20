@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const zlib = require('zlib');
 
 // Detect platform and architecture
 function getPlatformBinary() {
@@ -33,13 +34,33 @@ function getPlatformBinary() {
   return platformMap[platform][arch] || null;
 }
 
+// Decompress gzipped binary if needed
+function ensureBinaryDecompressed(gzPath, outputPath) {
+  if (fs.existsSync(outputPath)) {
+    return; // Already decompressed
+  }
+  
+  if (!fs.existsSync(gzPath)) {
+    return; // No compressed file
+  }
+  
+  // Decompress
+  const compressed = fs.readFileSync(gzPath);
+  const decompressed = zlib.gunzipSync(compressed);
+  fs.writeFileSync(outputPath, decompressed, { mode: 0o755 });
+}
+
 // Try to find the appropriate binary
 const binaryName = getPlatformBinary();
 let binaryPath = null;
 
 if (binaryName) {
-  // Try prebuilt binary first
-  binaryPath = path.join(__dirname, '..', 'bin', 'dist', binaryName);
+  const distDir = path.join(__dirname, '..', 'bin', 'dist');
+  binaryPath = path.join(distDir, binaryName);
+  const gzPath = binaryPath + '.gz';
+  
+  // Try to decompress if needed
+  ensureBinaryDecompressed(gzPath, binaryPath);
   
   if (!fs.existsSync(binaryPath)) {
     // Fall back to development binary

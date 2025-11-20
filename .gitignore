@@ -17,6 +17,8 @@ node_modules/
 ./dist/
 !bin/dist/
 !bin/dist/**
+bin/dist/rqm-*
+!bin/dist/*.gz
 build/
 *.log
 npm-debug.log*
