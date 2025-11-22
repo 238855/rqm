@@ -90,7 +90,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 
 func openBrowser(url string) {
 	var cmd *exec.Cmd
-	
+
 	switch runtime.GOOS {
 	case "darwin":
 		cmd = exec.Command("open", url)
@@ -102,7 +102,7 @@ func openBrowser(url string) {
 		fmt.Printf("Please open your browser to: %s\n", url)
 		return
 	}
-	
+
 	if err := cmd.Start(); err != nil {
 		fmt.Printf("Failed to open browser: %v\n", err)
 		fmt.Printf("Please open your browser to: %s\n", url)

@@ -54,18 +54,29 @@ The system intelligently handles circular references to prevent infinite loops d
 
 ### For End Users
 
-Install from npm (once published):
+**Install from npm** (once published):
 
 ```bash
 npm install -g @requiem-org/rqm
 rqm --version
 ```
 
-Or install directly from GitHub:
+**Or install directly from GitHub:**
 
 ```bash
 npm install -g github:238855/rqm
 ```
+
+**Or build and install locally:**
+
+```bash
+git clone https://github.com/238855/rqm.git
+cd rqm
+npm run build:unified  # Build unified binary with embedded Rust + Web UI
+npm run install:global # Install to /usr/local/bin
+```
+
+After installation, both `rqm` and `requim` commands will be available globally.
 
 ### For Developers
 
