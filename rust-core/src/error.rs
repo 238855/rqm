@@ -46,6 +46,67 @@ impl Error {
     pub fn custom(msg: impl Into<String>) -> Self {
         Error::Custom(msg.into())
     }
+
+    /// Enhance YAML parsing error with helpful context
+    pub fn enhance_yaml_error(err: serde_yaml::Error) -> Self {
+        let msg = err.to_string();
+        
+        // Detect common error patterns and provide helpful hints
+        let enhanced = if msg.contains("RequirementReference") {
+            format!(
+                "{}\n\n💡 Hint: A requirement in the 'requirements' array has an invalid format.\n\
+                \nValid formats:\n\
+                  1. String reference (just the summary):\n\
+                     - \"Parent Requirement Summary\"\n\
+                  \n\
+                  2. Full requirement object:\n\
+                     - summary: \"Requirement summary\"\n\
+                       description: \"Description text\"\n\
+                       requirements: [...]  # optional nested requirements\n\
+                \n🔍 Common issues:\n\
+                  • Missing 'summary' field in a requirement object\n\
+                  • Using a mapping (key: value) instead of a string for reference\n\
+                  • Incorrect indentation in nested requirements",
+                msg
+            )
+        } else if msg.contains("missing field") {
+            let field_name = msg.split('`').nth(1).unwrap_or("unknown");
+            format!(
+                "{}\n\n💡 Required field '{}' is missing.\n\
+                \nEach requirement must have a 'summary' field.\n\
+                \nMinimal example:\n\
+                  requirements:\n\
+                    - summary: \"My requirement\"\n\
+                \nFull example:\n\
+                  requirements:\n\
+                    - summary: \"User Authentication\"\n\
+                      name: \"AUTH-001\"\n\
+                      description: \"System must authenticate users\"\n\
+                      owner: \"user@example.com\"",
+                msg, field_name
+            )
+        } else if msg.contains("expected") {
+            format!(
+                "{}\n\n💡 Hint: Check the YAML syntax and structure.\n\
+                \nCommon issues:\n\
+                  • Incorrect indentation (YAML uses 2 spaces)\n\
+                  • Missing colon after field names\n\
+                  • Using tabs instead of spaces\n\
+                  • Unclosed quotes\n\
+                \nExample of correct structure:\n\
+                  version: \"1.0\"\n\
+                  requirements:\n\
+                    - summary: \"Requirement 1\"\n\
+                      description: \"Description here\"",
+                msg
+            )
+        } else {
+            msg
+        };
+
+        // Return enhanced error message wrapped in YamlError variant
+        Error::Custom(format!("YAML parsing error: {}", enhanced))
+    }
 }
 
 #[cfg(test)]

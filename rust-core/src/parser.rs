@@ -2,7 +2,7 @@
 // Copyright (c) 2025
 // SPDX-License-Identifier: MIT
 
-use crate::{RequirementConfig, Result};
+use crate::{Error, RequirementConfig, Result};
 use std::fs;
 use std::path::Path;
 
@@ -18,8 +18,7 @@ impl Parser {
 
     /// Parse a YAML string into a RequirementConfig
     pub fn parse_str(content: &str) -> Result<RequirementConfig> {
-        let config: RequirementConfig = serde_yaml::from_str(content)?;
-        Ok(config)
+        serde_yaml::from_str(content).map_err(Error::enhance_yaml_error)
     }
 
     /// Serialize a RequirementConfig to YAML string

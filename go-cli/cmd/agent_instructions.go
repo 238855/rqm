@@ -39,11 +39,11 @@ func init() {
 
 func runAgentInstructions(cmd *cobra.Command, args []string) error {
 	instructions := getInstructions()
-	
+
 	if installFlag {
 		return installInstructions(instructions)
 	}
-	
+
 	fmt.Print(instructions)
 	return nil
 }
@@ -234,46 +234,46 @@ func installInstructions(instructions string) error {
 	// Look for .github/copilot-instructions.md
 	githubDir := ".github"
 	targetFile := filepath.Join(githubDir, "copilot-instructions.md")
-	
+
 	// Check if .github directory exists
 	if _, err := os.Stat(githubDir); os.IsNotExist(err) {
 		return fmt.Errorf(".github directory not found - please create it first")
 	}
-	
+
 	// Check if file exists
 	if _, err := os.Stat(targetFile); os.IsNotExist(err) {
 		return fmt.Errorf("%s not found - please create the file first", targetFile)
 	}
-	
+
 	// Read existing content
 	existingContent, err := os.ReadFile(targetFile)
 	if err != nil {
 		return fmt.Errorf("failed to read %s: %w", targetFile, err)
 	}
-	
+
 	existingStr := string(existingContent)
-	
+
 	// Check if RDD instructions already exist
 	if strings.Contains(existingStr, "Requirement-Driven Development") ||
-	   strings.Contains(existingStr, "RDD Workflow") ||
-	   strings.Contains(existingStr, "rqm validate") ||
-	   strings.Contains(existingStr, "rqm agent-instructions") {
+		strings.Contains(existingStr, "RDD Workflow") ||
+		strings.Contains(existingStr, "rqm validate") ||
+		strings.Contains(existingStr, "rqm agent-instructions") {
 		fmt.Printf("✓ %s already contains RQM/RDD instructions\n", targetFile)
 		fmt.Println("No changes made (instructions already present)")
 		return nil
 	}
-	
+
 	// Append instructions
 	separator := "\n\n---\n\n"
 	newContent := existingStr + separator + instructions
-	
+
 	if err := os.WriteFile(targetFile, []byte(newContent), 0644); err != nil {
 		return fmt.Errorf("failed to write to %s: %w", targetFile, err)
 	}
-	
+
 	fmt.Printf("✓ Successfully added RDD instructions to %s\n", targetFile)
 	fmt.Printf("  Added %d lines of RQM workflow guidance\n", strings.Count(instructions, "\n"))
 	fmt.Println("\nAI agents will now follow Requirement-Driven Development workflow!")
-	
+
 	return nil
 }
