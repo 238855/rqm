@@ -6,8 +6,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
+)
+
+var (
+	installFlag bool
 )
 
 var agentInstructionsCmd = &cobra.Command{
@@ -16,18 +23,33 @@ var agentInstructionsCmd = &cobra.Command{
 	Long: `Generate instructions for AI coding agents (GitHub Copilot, Claude, Cursor, etc.)
 on how to follow Requirement-Driven Development (RDD) workflow with RQM.
 
-Output can be copied into .github/copilot-instructions.md or similar files.`,
+Output can be copied into .github/copilot-instructions.md or similar files.
+
+With --install flag, automatically appends to .github/copilot-instructions.md if found.`,
 	Example: `  rqm agent-instructions
-  rqm agent-instructions > .github/rdd-workflow.md`,
-	Run: runAgentInstructions,
+  rqm agent-instructions > .github/rdd-workflow.md
+  rqm agent-instructions --install`,
+	RunE: runAgentInstructions,
 }
 
 func init() {
 	rootCmd.AddCommand(agentInstructionsCmd)
+	agentInstructionsCmd.Flags().BoolVar(&installFlag, "install", false, "Install instructions to .github/copilot-instructions.md")
 }
 
-func runAgentInstructions(cmd *cobra.Command, args []string) {
-	instructions := `# AI Agent Instructions: Requirement-Driven Development (RDD)
+func runAgentInstructions(cmd *cobra.Command, args []string) error {
+	instructions := getInstructions()
+	
+	if installFlag {
+		return installInstructions(instructions)
+	}
+	
+	fmt.Print(instructions)
+	return nil
+}
+
+func getInstructions() string {
+	return `# AI Agent Instructions: Requirement-Driven Development (RDD)
 
 ## What is RDD?
 
@@ -206,6 +228,52 @@ Acceptance test: tests/acceptance/test_auth.sh"
 **Remember**: Requirements are living documents. Update them as the project evolves.
 Use ` + "`rqm validate`" + ` frequently. Follow acceptance criteria strictly.
 `
+}
 
-	fmt.Print(instructions)
+func installInstructions(instructions string) error {
+	// Look for .github/copilot-instructions.md
+	githubDir := ".github"
+	targetFile := filepath.Join(githubDir, "copilot-instructions.md")
+	
+	// Check if .github directory exists
+	if _, err := os.Stat(githubDir); os.IsNotExist(err) {
+		return fmt.Errorf(".github directory not found - please create it first")
+	}
+	
+	// Check if file exists
+	if _, err := os.Stat(targetFile); os.IsNotExist(err) {
+		return fmt.Errorf("%s not found - please create the file first", targetFile)
+	}
+	
+	// Read existing content
+	existingContent, err := os.ReadFile(targetFile)
+	if err != nil {
+		return fmt.Errorf("failed to read %s: %w", targetFile, err)
+	}
+	
+	existingStr := string(existingContent)
+	
+	// Check if RDD instructions already exist
+	if strings.Contains(existingStr, "Requirement-Driven Development") ||
+	   strings.Contains(existingStr, "RDD Workflow") ||
+	   strings.Contains(existingStr, "rqm validate") ||
+	   strings.Contains(existingStr, "rqm agent-instructions") {
+		fmt.Printf("✓ %s already contains RQM/RDD instructions\n", targetFile)
+		fmt.Println("No changes made (instructions already present)")
+		return nil
+	}
+	
+	// Append instructions
+	separator := "\n\n---\n\n"
+	newContent := existingStr + separator + instructions
+	
+	if err := os.WriteFile(targetFile, []byte(newContent), 0644); err != nil {
+		return fmt.Errorf("failed to write to %s: %w", targetFile, err)
+	}
+	
+	fmt.Printf("✓ Successfully added RDD instructions to %s\n", targetFile)
+	fmt.Printf("  Added %d lines of RQM workflow guidance\n", strings.Count(instructions, "\n"))
+	fmt.Println("\nAI agents will now follow Requirement-Driven Development workflow!")
+	
+	return nil
 }
