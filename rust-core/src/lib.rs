@@ -16,6 +16,7 @@
 //! - Automatic ID generation with metadata management
 
 pub mod error;
+pub mod ffi;
 pub mod graph;
 pub mod metadata;
 pub mod parser;

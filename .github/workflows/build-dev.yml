@@ -1,0 +1,234 @@
+name: Build Dev Binaries
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+jobs:
+  build-unified-macos:
+    name: Build Unified Binary (macOS)
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            arch: arm64
+          - target: x86_64-apple-darwin
+            arch: amd64
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Build Rust library
+        run: |
+          cd rust-core
+          cargo build --release --lib --target ${{ matrix.target }}
+      
+      - name: Build unified Go binary
+        env:
+          CGO_ENABLED: 1
+          GOOS: darwin
+          GOARCH: ${{ matrix.arch }}
+          CGO_LDFLAGS: -L${{ github.workspace }}/rust-core/target/${{ matrix.target }}/release
+        run: |
+          cd go-cli
+          go build -o rqm-macos-${{ matrix.arch }} -ldflags="-s -w" .
+      
+      - name: Test binary
+        if: matrix.arch == 'amd64' || (matrix.arch == 'arm64' && runner.arch == 'ARM64')
+        run: |
+          ./go-cli/rqm-macos-${{ matrix.arch }} --version
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rqm-macos-${{ matrix.arch }}
+          path: go-cli/rqm-macos-${{ matrix.arch }}
+          retention-days: 30  # Auto-delete after 30 days
+
+  build-unified-linux:
+    name: Build Unified Binary (Linux)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            arch: amd64
+          - target: aarch64-unknown-linux-gnu
+            arch: arm64
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      
+      - name: Install cross-compilation tools
+        if: matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Build Rust library
+        run: |
+          cd rust-core
+          cargo build --release --lib --target ${{ matrix.target }}
+      
+      - name: Build unified Go binary
+        env:
+          CGO_ENABLED: 1
+          GOOS: linux
+          GOARCH: ${{ matrix.arch }}
+          CGO_LDFLAGS: -L${{ github.workspace }}/rust-core/target/${{ matrix.target }}/release
+          CC: ${{ matrix.arch == 'arm64' && 'aarch64-linux-gnu-gcc' || 'gcc' }}
+        run: |
+          cd go-cli
+          go build -o rqm-linux-${{ matrix.arch }} -ldflags="-s -w" .
+      
+      - name: Test binary
+        if: matrix.arch == 'amd64'
+        run: |
+          ./go-cli/rqm-linux-${{ matrix.arch }} --version
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rqm-linux-${{ matrix.arch }}
+          path: go-cli/rqm-linux-${{ matrix.arch }}
+          retention-days: 30
+
+  build-unified-windows:
+    name: Build Unified Binary (Windows)
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-pc-windows-msvc
+            arch: amd64
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Build Rust library
+        run: |
+          cd rust-core
+          cargo build --release --lib --target ${{ matrix.target }}
+      
+      - name: Build unified Go binary
+        env:
+          CGO_ENABLED: 1
+          GOOS: windows
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          cd go-cli
+          $env:CGO_LDFLAGS = "-L${{ github.workspace }}\rust-core\target\${{ matrix.target }}\release"
+          go build -o rqm-windows-${{ matrix.arch }}.exe -ldflags="-s -w" .
+      
+      - name: Test binary
+        run: |
+          .\go-cli\rqm-windows-${{ matrix.arch }}.exe --version
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rqm-windows-${{ matrix.arch }}
+          path: go-cli/rqm-windows-${{ matrix.arch }}.exe
+          retention-days: 30
+
+  # Optional: Create combined archive of all binaries
+  package-binaries:
+    name: Package All Binaries
+    needs: [build-unified-macos, build-unified-linux, build-unified-windows]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: binaries
+      
+      - name: List binaries
+        run: |
+          echo "Built binaries:"
+          find binaries -type f -exec ls -lh {} \;
+      
+      - name: Create archive
+        run: |
+          cd binaries
+          # Flatten directory structure
+          find . -type f -exec mv {} . \;
+          # Remove empty directories
+          find . -type d -empty -delete
+          # Create tarball
+          tar -czf ../rqm-dev-binaries.tar.gz *
+          cd ..
+          ls -lh rqm-dev-binaries.tar.gz
+      
+      - name: Upload combined archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: rqm-dev-all-platforms
+          path: rqm-dev-binaries.tar.gz
+          retention-days: 30
+
+  # Test installation (simulate npm install)
+  test-installation:
+    name: Test npm Wrapper
+    needs: [build-unified-macos]
+    runs-on: macos-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Download macOS binary
+        uses: actions/download-artifact@v4
+        with:
+          name: rqm-macos-amd64
+          path: bin/dist
+      
+      - name: Make binary executable
+        run: chmod +x bin/dist/rqm-macos-amd64
+      
+      - name: Test npm wrapper
+        run: |
+          npm install
+          node bin/rqm.js validate examples/sample-requirements.yml

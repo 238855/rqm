@@ -1,0 +1,194 @@
+name: Release Binaries
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v0.1.0
+
+permissions:
+  contents: write  # Required for creating releases
+
+jobs:
+  build-release-binaries:
+    name: Build Release Binary
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # macOS
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            platform: macos
+            arch: arm64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            platform: macos
+            arch: amd64
+          
+          # Linux
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            platform: linux
+            arch: amd64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            platform: linux
+            arch: arm64
+          
+          # Windows
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            platform: windows
+            arch: amd64
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+      
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      
+      - name: Install cross-compilation tools (Linux ARM64)
+        if: matrix.platform == 'linux' && matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+      
+      - name: Build Rust library
+        run: |
+          cd rust-core
+          cargo build --release --lib --target ${{ matrix.target }}
+      
+      - name: Build unified Go binary (Unix)
+        if: matrix.platform != 'windows'
+        env:
+          CGO_ENABLED: 1
+          GOOS: ${{ matrix.platform }}
+          GOARCH: ${{ matrix.arch }}
+          CGO_LDFLAGS: -L${{ github.workspace }}/rust-core/target/${{ matrix.target }}/release
+          CC: ${{ (matrix.platform == 'linux' && matrix.arch == 'arm64') && 'aarch64-linux-gnu-gcc' || '' }}
+        run: |
+          cd go-cli
+          go build -o rqm-${{ matrix.platform }}-${{ matrix.arch }} \
+            -ldflags="-s -w -X main.Version=${{ github.ref_name }}" .
+          
+      - name: Build unified Go binary (Windows)
+        if: matrix.platform == 'windows'
+        env:
+          CGO_ENABLED: 1
+          GOOS: windows
+          GOARCH: ${{ matrix.arch }}
+        run: |
+          cd go-cli
+          $env:CGO_LDFLAGS = "-L${{ github.workspace }}\rust-core\target\${{ matrix.target }}\release"
+          go build -o rqm-${{ matrix.platform }}-${{ matrix.arch }}.exe `
+            -ldflags="-s -w -X main.Version=${{ github.ref_name }}" .
+      
+      - name: Generate checksum (Unix)
+        if: matrix.platform != 'windows'
+        run: |
+          cd go-cli
+          shasum -a 256 rqm-${{ matrix.platform }}-${{ matrix.arch }} > rqm-${{ matrix.platform }}-${{ matrix.arch }}.sha256
+      
+      - name: Generate checksum (Windows)
+        if: matrix.platform == 'windows'
+        run: |
+          cd go-cli
+          Get-FileHash rqm-${{ matrix.platform }}-${{ matrix.arch }}.exe -Algorithm SHA256 | `
+            Select-Object -ExpandProperty Hash | `
+            Out-File -Encoding ASCII rqm-${{ matrix.platform }}-${{ matrix.arch }}.exe.sha256
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rqm-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            go-cli/rqm-*
+          retention-days: 90
+
+  create-release:
+    name: Create GitHub Release
+    needs: build-release-binaries
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+      
+      - name: Display structure
+        run: ls -R dist/
+      
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          find dist -type f -exec cp {} release/ \;
+          ls -lh release/
+      
+      - name: Extract changelog
+        id: changelog
+        run: |
+          # Extract version section from CHANGELOG if it exists
+          VERSION="${{ github.ref_name }}"
+          if [ -f CHANGELOG.md ]; then
+            awk "/^## \[${VERSION#v}\]/{flag=1;next}/^## \[/{flag=0}flag" CHANGELOG.md > release-notes.md
+          else
+            echo "Release $VERSION" > release-notes.md
+          fi
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}  # Pre-release if version has suffix like v0.1.0-beta
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-npm:
+    name: Publish to npm
+    needs: create-release
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.ref_name, '-') }}  # Only publish stable versions (not pre-releases)
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+      
+      - name: Prepare npm package
+        run: |
+          mkdir -p bin/dist
+          find dist -type f -name 'rqm-*' ! -name '*.sha256' -exec cp {} bin/dist/ \;
+          chmod +x bin/dist/*
+          ls -lh bin/dist/
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Update package version
+        run: |
+          VERSION="${{ github.ref_name }}"
+          npm version ${VERSION#v} --no-git-tag-version
+      
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

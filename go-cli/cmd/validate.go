@@ -14,6 +14,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Import the embedded Rust validator (only when built with CGO)
+// This will fail gracefully if CGO is not available
+var embeddedValidator interface {
+	ValidateYAML(string) (*ValidationResult, error)
+	Available() bool
+}
+
 type ValidationResult struct {
 	Valid    bool     `json:"valid"`
 	Errors   []string `json:"errors"`
@@ -45,6 +52,36 @@ func runValidation(file string) error {
 		return fmt.Errorf("file does not exist: %s", file)
 	}
 
+	// Try embedded validator first (if available via CGO)
+	if embeddedValidator != nil && embeddedValidator.Available() {
+		return runEmbeddedValidation(file)
+	}
+
+	// Fall back to external validator binary
+	return runExternalValidation(file)
+}
+
+// runEmbeddedValidation uses the CGO-linked Rust validator
+func runEmbeddedValidation(file string) error {
+	fmt.Printf("Validating %s (using embedded validator)...\n", file)
+
+	// Read file content
+	content, err := os.ReadFile(file)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %w", err)
+	}
+
+	// Call embedded Rust validator
+	result, err := embeddedValidator.ValidateYAML(string(content))
+	if err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
+
+	return displayValidationResult(result)
+}
+
+// runExternalValidation uses the separate rqm-validator binary
+func runExternalValidation(file string) error {
 	// Find the rqm-validator binary
 	validatorPath := findValidatorBinary()
 	if validatorPath == "" {
@@ -52,7 +89,7 @@ func runValidation(file string) error {
 	}
 
 	// Call rust-core validator
-	fmt.Printf("Validating %s...\n", file)
+	fmt.Printf("Validating %s (using external validator)...\n", file)
 
 	validatorCmd := exec.Command(validatorPath, file)
 	output, _ := validatorCmd.CombinedOutput()
@@ -63,6 +100,11 @@ func runValidation(file string) error {
 		return fmt.Errorf("failed to parse validator output: %w\nOutput: %s", jsonErr, string(output))
 	}
 
+	return displayValidationResult(&result)
+}
+
+// displayValidationResult shows the validation results to the user
+func displayValidationResult(result *ValidationResult) error {
 	// Display results
 	if result.Valid {
 		fmt.Println("✓ YAML syntax valid")
