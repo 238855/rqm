@@ -50,6 +50,16 @@ echo -e "${BLUE}Building RQM in $MODE mode...${NC}"
 # Create dist directory
 mkdir -p "$DIST_DIR"
 
+# Step 0: Build Web UI
+echo -e "${YELLOW}Building Web UI...${NC}"
+cd "$PROJECT_ROOT/web-ui"
+npm install
+npm run build
+
+echo -e "${YELLOW}Copying Web UI to Go CLI...${NC}"
+rm -rf "$PROJECT_ROOT/go-cli/cmd/web-dist"
+cp -r "$PROJECT_ROOT/web-ui/dist" "$PROJECT_ROOT/go-cli/cmd/web-dist"
+
 # Step 1: Build Rust library/binary
 if [ "$MODE" = "unified" ]; then
   echo -e "${YELLOW}Building Rust static library for current platform...${NC}"
